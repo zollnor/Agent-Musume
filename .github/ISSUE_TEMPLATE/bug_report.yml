@@ -1,0 +1,37 @@
+name: 问题反馈
+description: 安装、动作、会话识别或联动出现问题
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "请只提供脱敏后的必要信息。不要上传完整配置目录、访问令牌或原始 AI 会话。"
+  - type: input
+    id: version
+    attributes:
+      label: AgentMusume 版本
+      placeholder: 0.1.0，安装版或源码版
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Windows 版本、缩放比例与显示器数量
+      placeholder: Windows 11，100%，单显示器
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: 会话来源与工具版本
+      placeholder: ChatGPT 桌面版 / Codex CLI / Claude Code / DSH / 纯日常模式
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤、预期行为和实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 可选的脱敏日志或截图
+      description: 删除个人路径、任务内容和控制令牌，截图只保留桌宠相关区域。

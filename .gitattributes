@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.webm binary
+*.png binary
+*.ttf binary
+*.cmd text eol=crlf
+*.vbs text eol=crlf

@@ -1,0 +1,78 @@
+{
+  "name": "agent-musume",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Desktop companions that react to your local AI agent sessions: ChatGPT desktop, Codex CLI, Claude Code and DeepSeek Harness",
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "postinstall": "install-electron",
+    "start": "node src/start.mjs",
+    "stop": "node src/control.mjs stop",
+    "status": "node src/control.mjs panel",
+    "package": "node src/prepare.mjs && electron-builder --win nsis",
+    "pretest": "node src/prepare.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.15.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "main": "src/app-entry.cjs",
+  "author": "Agent-Musume contributors",
+  "devDependencies": {
+    "electron": "43.3.0",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.agentmusume.desktop",
+    "productName": "Agent-Musume",
+    "artifactName": "Agent-Musume-Setup-${version}.${ext}",
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**",
+      "pets/**",
+      "vendor/**",
+      "package.json",
+      "!vendor/**/*.original*"
+    ],
+    "extraResources": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE"
+      },
+      {
+        "from": "NOTICE.md",
+        "to": "NOTICE.md"
+      }
+    ],
+    "asar": true,
+    "electronLanguages": [
+      "en-US",
+      "zh-CN",
+      "zh-TW"
+    ],
+    "compression": "maximum",
+    "npmRebuild": false,
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Agent-Musume",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

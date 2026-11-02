@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; form-action 'none'; base-uri 'none'">
+  <title>桌宠设置</title><link rel="stylesheet" href="settings.css"><script src="settings.js" defer></script>
+</head>
+<body>
+  <form id="settings-form" class="app" novalidate>
+    <nav class="side" aria-label="设置分区">
+      <div class="side-group">
+        <div class="side-label" id="pets-label">宠物</div>
+        <div id="pet-tabs" class="pet-list" role="tablist" aria-labelledby="pets-label"></div>
+        <button type="button" id="add-pet" class="nav-item add"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 5v10M5 10h10"/></svg><span>添加宠物</span></button>
+      </div>
+      <div class="side-group">
+        <div class="side-label">通用</div>
+        <button type="button" class="nav-item" data-page="physics"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3.5v6.5M6.5 7.2L10 10.6l3.5-3.4"/><path d="M4 13.5c1.6 1.9 3.6 3 6 3s4.4-1.1 6-3"/></svg><span class="nav-text"><b>拖拽与抛掷</b><small>所有宠物共用的手感</small></span></button>
+        <button type="button" class="nav-item" data-page="preview"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5.2v9.6l7.6-4.8z"/></svg><span class="nav-text"><b>预览</b><small>不开会话也能看反应和互动</small></span></button>
+        <button type="button" class="nav-item" data-page="advanced"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h7M15 6h1M4 14h1M9 14h7"/><circle cx="13" cy="6" r="2"/><circle cx="7" cy="14" r="2"/></svg><span class="nav-text"><b>高级</b><small>开机启动、配置文件与隐私</small></span></button>
+        <button type="button" class="nav-item" id="open-status"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 4h5v5M16 4l-7 7"/><path d="M14 11.5V15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3.5"/></svg><span class="nav-text"><b>运行状态</b><small>在浏览器中查看各会话</small></span></button>
+      </div>
+    </nav>
+
+    <main class="main" id="main">
+      <!-- One pet -->
+      <section class="page" data-page="pet" aria-labelledby="pet-title">
+        <header class="page-head pet-head">
+          <span id="pet-avatar" class="avatar lg" aria-hidden="true"></span>
+          <div class="titles"><h1 id="pet-title"></h1><p id="pet-subtitle" class="subtitle"></p></div>
+          <button id="remove-pet" type="button" class="quiet danger"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 6h11M8 6V4.5h4V6M6 6l.7 9.5h6.6L14 6"/></svg>删除</button>
+        </header>
+
+        <h2>外观</h2>
+        <div class="group">
+          <div class="row stack"><span class="label" id="appearance-label">形象</span><div class="control">
+            <div id="pet-appearance" class="looks" role="radiogroup" aria-labelledby="appearance-label">
+              <label class="look"><input type="radio" name="appearance" value="claude-lady"><span class="avatar" data-look="claude-lady"></span><span>Claude大小姐</span></label>
+              <label class="look"><input type="radio" name="appearance" value="dragon-girl-D"><span class="avatar" data-look="dragon-girl-D"></span><span>龙娘</span></label>
+              <label class="look"><input type="radio" name="appearance" value="blue-fish"><span class="avatar" data-look="blue-fish"></span><span>蓝色大肥鱼</span></label>
+            </div>
+          </div></div>
+          <div class="row"><label for="pet-name">名字</label><div class="control"><input id="pet-name" maxlength="80" required></div></div>
+          <div class="row"><label for="pet-size">大小</label><div class="control inline">
+            <input id="pet-size-range" class="range" type="range" min="80" max="800" step="10" aria-label="大小滑块">
+            <span class="field-unit"><input id="pet-size" class="num" type="number" min="80" max="1600" step="1" required><span>px</span></span>
+          </div></div>
+          <div class="row"><label for="pet-display">显示在桌面上</label><div class="control end"><input id="pet-display" class="switch" type="checkbox"></div></div>
+        </div>
+
+        <h2>位置与活动</h2>
+        <div class="group">
+          <div class="row top"><span class="label" id="corner-label">初始位置</span><div class="control inline corner-row">
+            <div id="pet-corner" class="corners" role="radiogroup" aria-labelledby="corner-label">
+              <label title="左上角"><input type="radio" name="corner" value="top-left" aria-label="左上角"><i></i></label>
+              <label title="右上角"><input type="radio" name="corner" value="top-right" aria-label="右上角"><i></i></label>
+              <label title="左下角"><input type="radio" name="corner" value="bottom-left" aria-label="左下角"><i></i></label>
+              <label title="右下角"><input type="radio" name="corner" value="bottom-right" aria-label="右下角"><i></i></label>
+            </div>
+            <div class="offsets">
+              <span id="corner-name" class="corner-name"></span>
+              <label class="field-unit"><span class="pre">水平</span><input id="pet-x" class="num" type="number" step="any" required><span>px</span></label>
+              <label class="field-unit"><span class="pre">垂直</span><input id="pet-y" class="num" type="number" step="any" required><span>px</span></label>
+            </div>
+          </div></div>
+          <div class="row"><span class="label" id="activity-label">活跃度<small>空闲时做小动作的频率。</small></span><div class="control">
+            <div id="pet-activity" class="segmented" role="radiogroup" aria-labelledby="activity-label">
+              <label><input type="radio" name="activity" value="quiet"><span>安静</span></label>
+              <label><input type="radio" name="activity" value="normal"><span>普通</span></label>
+              <label><input type="radio" name="activity" value="lively"><span>活泼</span></label>
+            </div>
+          </div></div>
+          <div class="row"><label for="pet-fixed">固定位置<small>不再自动走动，仍可拖拽。</small></label><div class="control end"><input id="pet-fixed" class="switch" type="checkbox"></div></div>
+        </div>
+
+        <h2>会话</h2>
+        <div class="group">
+          <div class="row"><label for="pet-work">跟随会话状态<small>会话思考、执行、等你确认时，换上对应动作。</small></label><div class="control end"><input id="pet-work" class="switch" type="checkbox"></div></div>
+          <div class="sources" role="group" aria-label="会话来源">
+            <div class="sources-head"><span>来源</span><span id="col-react">响应</span><span id="col-help">接手子代理</span></div>
+            <div class="source-row"><span class="source-name"><i data-src="desktop"></i>ChatGPT 桌面版</span><label class="tick"><input id="source-desktop" type="checkbox" aria-label="响应 ChatGPT 桌面版"><span></span></label><label class="tick"><input id="helper-desktop" type="checkbox" aria-label="接手 ChatGPT 桌面版的子代理"><span></span></label></div>
+            <div class="source-row"><span class="source-name"><i data-src="codex"></i>Codex CLI</span><label class="tick"><input id="source-codex" type="checkbox" aria-label="响应 Codex CLI"><span></span></label><label class="tick"><input id="helper-codex" type="checkbox" aria-label="接手 Codex CLI 的子代理"><span></span></label></div>
+            <div class="source-row"><span class="source-name"><i data-src="claude"></i>Claude Code</span><label class="tick"><input id="source-claude" type="checkbox" aria-label="响应 Claude Code"><span></span></label><label class="tick"><input id="helper-claude" type="checkbox" aria-label="接手 Claude Code 的子代理"><span></span></label></div>
+            <div class="source-row"><span class="source-name"><i data-src="dsh"></i>DeepSeek Harness</span><label class="tick"><input id="source-dsh" type="checkbox" aria-label="响应 DeepSeek Harness"><span></span></label><label class="tick"><input id="helper-dsh" type="checkbox" aria-label="接手 DeepSeek Harness 的子代理"><span></span></label></div>
+            <p class="hint sources-hint"><b>响应</b>：这只宠物随该来源的会话做出反应，都不选时只做随机动作。<b>接手子代理</b>：该来源派出子代理时，由这只宠物上前接手并演示进度。</p>
+          </div>
+        </div>
+
+        <h2>互动</h2>
+        <div class="group">
+          <div class="row"><label for="act-collab">协作演出<small>派任务、交结果时和同伴同台演出。</small></label><div class="control end"><input id="act-collab" class="switch" type="checkbox"></div></div>
+          <div class="row"><label for="act-social">回应同伴<small>同伴完成、出错或等你确认时做出反应。</small></label><div class="control end"><input id="act-social" class="switch" type="checkbox"></div></div>
+          <div class="row"><label for="act-idle">空闲闲聊<small>大家都空闲时，偶尔和同伴聊几句。</small></label><div class="control end"><input id="act-idle" class="switch" type="checkbox"></div></div>
+          <div class="row"><label for="act-approach">走到同伴身边<small>互动时走过去；关闭则在原地回应。</small></label><div class="control end"><input id="act-approach" class="switch" type="checkbox"></div></div>
+          <div class="row"><label for="act-lines">显示台词<small>互动时在头顶显示对话气泡。</small></label><div class="control end"><input id="act-lines" class="switch" type="checkbox"></div></div>
+        </div>
+      </section>
+
+      <!-- Shared physics -->
+      <section class="page" data-page="physics" aria-labelledby="physics-title" hidden>
+        <header class="page-head"><div class="titles"><h1 id="physics-title">拖拽与抛掷</h1><p class="subtitle">所有宠物共用。</p></div></header>
+        <div class="group">
+          <div class="row"><label for="gravity">重力<small>被抛出后下落的快慢。</small></label><div class="control inline"><input id="gravity-range" class="range" type="range" min="0" max="4000" step="50" aria-label="重力滑块"><span class="field-unit"><input id="gravity" class="num" type="number" min="0" step="any" required><span>px/s²</span></span></div></div>
+          <div class="row"><label for="restitution">弹性<small>0 不弹起，1 原样弹回。</small></label><div class="control inline"><input id="restitution-range" class="range" type="range" min="0" max="1" step="0.01" aria-label="弹性滑块"><span class="field-unit"><input id="restitution" class="num" type="number" min="0" max="1" step="any" required><span></span></span></div></div>
+          <div class="row"><label for="groundFriction">地面摩擦<small>落地后滑行停下的快慢。</small></label><div class="control inline"><input id="groundFriction-range" class="range" type="range" min="0" max="10" step="0.1" aria-label="地面摩擦滑块"><span class="field-unit"><input id="groundFriction" class="num" type="number" min="0" step="any" required><span>/s</span></span></div></div>
+          <div class="row"><label for="throwPower">抛掷力度<small>松手时甩出去的速度倍数。</small></label><div class="control inline"><input id="throwPower-range" class="range" type="range" min="0.1" max="3" step="0.05" aria-label="抛掷力度滑块"><span class="field-unit"><input id="throwPower" class="num" type="number" min="0.001" step="any" required><span>×</span></span></div></div>
+        </div>
+        <div class="group">
+          <div class="row"><label for="ceilingBounce">顶部反弹<small>碰到屏幕顶部时弹回来。</small></label><div class="control end"><input id="ceilingBounce" class="switch" type="checkbox"></div></div>
+          <div class="row"><label for="petCollision">宠物互撞<small>宠物之间会相互碰撞。</small></label><div class="control end"><input id="petCollision" class="switch" type="checkbox"></div></div>
+          <div class="row"><label for="confineToScreen">限制在当前屏幕<small>多显示器时不会被抛到别的屏幕。</small></label><div class="control end"><input id="confineToScreen" class="switch" type="checkbox"></div></div>
+        </div>
+      </section>
+
+      <!-- Previews -->
+      <section class="page" data-page="preview" aria-labelledby="preview-title" hidden>
+        <header class="page-head"><div class="titles"><h1 id="preview-title">预览</h1><p class="subtitle">直接在桌面上演示，不需要真的开一个会话。</p></div></header>
+        <h2>会话反应</h2>
+        <div class="group pad">
+          <div class="hint-row"><p class="hint">所有跟随会话的宠物一起切换，约 12 秒后自动恢复实时。</p><button id="live" type="button" class="quiet">恢复实时</button></div>
+          <div class="buttons">
+            <button type="button" data-preview="thinking"><i class="st" data-st="busy"></i>思考</button><button type="button" data-preview="working"><i class="st" data-st="busy"></i>执行</button><button type="button" data-preview="result"><i class="st" data-st="busy"></i>整理</button><button type="button" data-preview="waiting"><i class="st" data-st="waiting"></i>等待确认</button><button type="button" data-preview="success"><i class="st" data-st="success"></i>完成</button><button type="button" data-preview="error"><i class="st" data-st="error"></i>出错</button>
+          </div>
+        </div>
+        <h2>宠物互动</h2>
+        <div class="group pad">
+          <div class="cast"><span class="hint">出演</span><div id="demo-cast" class="cast-list" role="radiogroup" aria-label="出演的宠物"></div></div>
+          <p class="hint">这只宠物和一位同伴一起演出，同伴优先选有双人片段的；再点一次换另一方先开口。需要至少两只宠物显示在桌面上。</p>
+          <div class="buttons">
+            <button type="button" data-show="collab.assign">派任务</button><button type="button" data-show="collab.deliver">交回结果</button><button type="button" data-show="collab.complete">一起完成</button><button type="button" data-show="collab.failed">子任务失败</button><button type="button" data-show="social.cheer">祝贺</button><button type="button" data-show="social.comfort">安慰</button><button type="button" data-show="social.nudge">提醒确认</button><button type="button" data-show="social.chat">闲聊</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Advanced -->
+      <section class="page" data-page="advanced" aria-labelledby="advanced-title" hidden>
+        <header class="page-head"><div class="titles"><h1 id="advanced-title">高级</h1></div></header>
+        <div class="group">
+          <div class="row"><label for="autostart">开机时启动<small id="autostart-note">登录 Windows 后自动启动宠物。切换后立即生效，不需要保存。</small></label><div class="control end"><input id="autostart" class="switch" type="checkbox" disabled></div></div>
+        </div>
+        <div class="group">
+          <div class="row"><span class="label">配置文件<small>保存时保留文件里的其他字段，并备份上一份配置。</small></span><div class="control end"><button id="config-file" type="button">打开配置文件</button></div></div>
+          <p id="extra-pets" class="hint pad-row" hidden></p>
+        </div>
+        <h2>隐私</h2>
+        <div class="group pad"><p class="note">只在本机读取会话记录来判断状态，不需要 API Key，也不保存或转发对话内容。远程（SSH、WSL、云端）会话不会触发反应。</p></div>
+      </section>
+    </main>
+
+    <footer class="bar">
+      <div id="message" role="status" aria-live="polite">正在加载设置…</div>
+      <div class="actions"><button id="reload" type="button" class="quiet" hidden>放弃更改</button><button id="save" type="submit" class="primary" disabled>保存</button></div>
+    </footer>
+  </form>
+</body>
+</html>

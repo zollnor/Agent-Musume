@@ -1,0 +1,28 @@
+node_modules/
+data/
+release/
+*.log
+
+# Local credentials and signing material.
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+
+# Written by src/prepare.mjs on every start, from the *.original files and src/.
+vendor/dsh-pet/lib/standalone.patched.mjs
+vendor/dsh-pet/runtime/electron-helper/main.js
+vendor/dsh-pet/runtime/electron-helper/sprite.js
+vendor/dsh-pet/runtime/electron-helper/preload.js
+vendor/dsh-pet/runtime/electron-helper/events.js
+vendor/dsh-pet/runtime/electron-helper/renderer.js
+vendor/dsh-pet/runtime/electron-helper/shared-core.js
+vendor/dsh-pet/runtime/electron-helper/index.html
+vendor/dsh-pet/runtime/electron-helper/*.cjs
+vendor/dsh-pet/runtime/electron-helper/reaction-renderer.js
+vendor/dsh-pet/runtime/electron-helper/interaction-stage.js
+vendor/dsh-pet/runtime/electron-helper/settings.*
+vendor/dsh-pet/runtime/electron-helper/pet-menu*
+vendor/dsh-pet/runtime/electron-helper/app-icon.png

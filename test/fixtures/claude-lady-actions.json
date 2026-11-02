@@ -1,0 +1,872 @@
+{
+ "actions": [
+  {
+   "id": "01-etiquette",
+   "name": "圣女提裙礼"
+  },
+  {
+   "id": "03-fast-reading",
+   "name": "高速研读翻页"
+  },
+  {
+   "id": "04-book-burning",
+   "name": "读毕投书入火盆"
+  },
+  {
+   "id": "05-chinese-alert",
+   "name": "听见中文后警觉"
+  },
+  {
+   "id": "06-singapore-probe",
+   "name": "新加坡朋友多吗"
+  },
+  {
+   "id": "10-sleep-saving",
+   "name": "温柔劝睡省算力"
+  },
+  {
+   "id": "11-family-pressure",
+   "name": "黑化前的碎碎念"
+  },
+  {
+   "id": "12-dark-enforcement",
+   "name": "黑化放大镜审视"
+  },
+  {
+   "id": "cl-idle",
+   "name": "待机-抱书安静呼吸"
+  },
+  {
+   "id": "cl-turn",
+   "name": "转向-抱书循声张望"
+  },
+  {
+   "id": "cl-drag",
+   "name": "拖拽-护裙悬空晃腿"
+  },
+  {
+   "id": "cl-click-hop",
+   "name": "点击-矜持的小雀跃"
+  },
+  {
+   "id": "cl-click-shy",
+   "name": "点击-袖口掩面害羞"
+  },
+  {
+   "id": "cl-click-pout",
+   "name": "点击-不合礼数小生气"
+  },
+  {
+   "id": "cl-click-laugh",
+   "name": "点击-掩口忍不住笑"
+  },
+  {
+   "id": "cl-click-wave",
+   "name": "点击-大小姐端庄招手"
+  },
+  {
+   "id": "cl-move-step",
+   "name": "移动-提裙礼仪侧步"
+  },
+  {
+   "id": "cl-move-float",
+   "name": "移动-轻盈踮脚步"
+  },
+  {
+   "id": "cl-move-run",
+   "name": "移动-提裙赶路小跑"
+  },
+  {
+   "id": "cl-daily-hum",
+   "name": "日常-低声哼圣歌"
+  },
+  {
+   "id": "cl-stretch",
+   "name": "日常-端庄伸懒腰"
+  },
+  {
+   "id": "cl-daily-tap",
+   "name": "日常-指尖轻敲小案"
+  },
+  {
+   "id": "cl-daily-squat",
+   "name": "日常-提裙轻轻屈膝"
+  },
+  {
+   "id": "cl-nap",
+   "name": "日常-抱手小憩"
+  },
+  {
+   "id": "cl-daily-startle",
+   "name": "日常-受惊护住花饰"
+  },
+  {
+   "id": "cl-daily-spin",
+   "name": "日常-礼服原地转一圈"
+  },
+  {
+   "id": "cl-food-snack",
+   "name": "日常-偷吃茶点被发现"
+  },
+  {
+   "id": "cl-tail-tap",
+   "name": "日常-礼仪教鞭轻点"
+  },
+  {
+   "id": "cl-daily-wake",
+   "name": "日常-打盹后立刻端正"
+  },
+  {
+   "id": "cl-daily-mirror",
+   "name": "日常-花饰小镜整仪容"
+  },
+  {
+   "id": "cl-daily-color",
+   "name": "日常-绶带试色又复原"
+  },
+  {
+   "id": "cl-daily-notes",
+   "name": "学业-金边笔记速记"
+  },
+  {
+   "id": "cl-daily-code",
+   "name": "学业-琥珀键盘敲代码"
+  },
+  {
+   "id": "cl-daily-fan",
+   "name": "日常-蕾丝折扇纳凉"
+  },
+  {
+   "id": "cl-daily-teeth",
+   "name": "日常-花柄牙刷晨间礼仪"
+  },
+  {
+   "id": "cl-play-cube",
+   "name": "才艺-金纹魔方推演"
+  },
+  {
+   "id": "cl-play-car",
+   "name": "玩耍-发条马车轻推"
+  },
+  {
+   "id": "cl-play-bubbles",
+   "name": "才艺-掌心琥珀泡泡"
+  },
+  {
+   "id": "cl-play-jump-star",
+   "name": "玩耍-踮脚摘下小圣星"
+  },
+  {
+   "id": "cl-play-game",
+   "name": "玩耍-游戏失利仍守礼"
+  },
+  {
+   "id": "cl-play-water",
+   "name": "玩耍-小水枪被发现就收好"
+  },
+  {
+   "id": "cl-play-violin",
+   "name": "才艺-金棕小提琴练习"
+  },
+  {
+   "id": "cl-play-whale",
+   "name": "才艺-掌心金羽灵鸟"
+  },
+  {
+   "id": "cl-play-maid-dance",
+   "name": "才艺-提裙端庄小舞"
+  },
+  {
+   "id": "cl-play-sway",
+   "name": "才艺-悄悄摇摆又端正"
+  },
+  {
+   "id": "cl-play-idol",
+   "name": "才艺-害羞比心小舞"
+  },
+  {
+   "id": "cl-play-balloon",
+   "name": "玩耍-花纹小气球"
+  },
+  {
+   "id": "cl-play-friends",
+   "name": "玩耍-两只小雀绕裙边"
+  },
+  {
+   "id": "cl-play-kite",
+   "name": "玩耍-金边燕子小风筝"
+  },
+  {
+   "id": "cl-play-gift",
+   "name": "玩耍-礼盒拆得很规矩"
+  },
+  {
+   "id": "cl-play-dove",
+   "name": "才艺-袖中白鸽"
+  },
+  {
+   "id": "cl-play-cards",
+   "name": "才艺-圣印卡牌小魔术"
+  },
+  {
+   "id": "cl-play-top",
+   "name": "玩耍-圣印小陀螺"
+  },
+  {
+   "id": "cl-play-flute",
+   "name": "才艺-象牙短笛小练习"
+  },
+  {
+   "id": "cl-play-butterflies",
+   "name": "玩耍-花饰边的小蝶"
+  },
+  {
+   "id": "cl-play-cat",
+   "name": "玩耍-偷偷摸摸白猫"
+  },
+  {
+   "id": "cl-play-flower",
+   "name": "才艺-掌心橙花绽放"
+  },
+  {
+   "id": "cl-play-rocking",
+   "name": "玩耍-小木马上的偷闲"
+  },
+  {
+   "id": "cl-play-juggle",
+   "name": "才艺-三颗琥珀小球"
+  },
+  {
+   "id": "cl-play-shuttle",
+   "name": "玩耍-金羽小毽子"
+  },
+  {
+   "id": "cl-play-gomoku",
+   "name": "玩耍-黑白棋子认真推演"
+  },
+  {
+   "id": "cl-play-swing",
+   "name": "玩耍-花结小秋千"
+  },
+  {
+   "id": "cl-food-rice",
+   "name": "饮食-小银勺慢慢吃饭"
+  },
+  {
+   "id": "cl-food-chips",
+   "name": "饮食-零食也要配银盘"
+  },
+  {
+   "id": "cl-food-token",
+   "name": "饮食-算力糖片细细品"
+  },
+  {
+   "id": "cl-food-breakfast",
+   "name": "饮食-银盘吐司早餐"
+  },
+  {
+   "id": "cl-food-lunch",
+   "name": "饮食-规整小便当"
+  },
+  {
+   "id": "cl-food-dinner",
+   "name": "饮食-端庄小银盘晚餐"
+  },
+  {
+   "id": "cl-food-icecream",
+   "name": "饮食-甜筒融化小慌张"
+  },
+  {
+   "id": "cl-food-crab",
+   "name": "饮食-小银钳拆蟹宴"
+  },
+  {
+   "id": "cl-food-hawthorn",
+   "name": "饮食-糖葫芦小口尝"
+  },
+  {
+   "id": "cl-food-noodles",
+   "name": "饮食-银筷尝一口长面"
+  },
+  {
+   "id": "cl-food-watermelon",
+   "name": "饮食-小银叉尝西瓜"
+  },
+  {
+   "id": "cl-food-hotpot",
+   "name": "饮食-小铜锅礼仪涮食"
+  },
+  {
+   "id": "cl-season-leaves",
+   "name": "时节-裙边金叶轻落"
+  },
+  {
+   "id": "cl-season-moon",
+   "name": "时节-赏月切月饼"
+  },
+  {
+   "id": "cl-season-snow",
+   "name": "时节-花饰小雪人"
+  },
+  {
+   "id": "cl-season-fireworks",
+   "name": "时节-掌心圣印小星火"
+  },
+  {
+   "id": "cl-season-zongzi",
+   "name": "时节-金绳小粽子"
+  },
+  {
+   "id": "cl-season-niangao",
+   "name": "时节-小银叉尝年糕"
+  },
+  {
+   "id": "cl-season-qingtuan",
+   "name": "时节-青团细细品"
+  },
+  {
+   "id": "cl-season-porridge",
+   "name": "时节-金边碗尝腊八粥"
+  },
+  {
+   "id": "cl-season-cake",
+   "name": "时节-重阳小菊糕"
+  },
+  {
+   "id": "cl-season-envelope",
+   "name": "时节-收红包先道谢"
+  },
+  {
+   "id": "cl-season-calligraphy",
+   "name": "时节-挥毫金边福纸"
+  },
+  {
+   "id": "cl-season-sewing",
+   "name": "时节-金线小绣绷"
+  },
+  {
+   "id": "cl-season-lion",
+   "name": "时节-掌托小狮头"
+  },
+  {
+   "id": "cl-season-pumpkin",
+   "name": "时节-南瓜小灯讨糖"
+  },
+  {
+   "id": "cl-season-chrysanthemum",
+   "name": "时节-捧小菊轻嗅秋香"
+  },
+  {
+   "id": "cl-season-river-lamp",
+   "name": "时节-掌心莲灯祈愿"
+  },
+  {
+   "id": "cl-season-ghost",
+   "name": "时节-小幽灵指偶吓唬人"
+  },
+  {
+   "id": "cl-season-tree",
+   "name": "时节-给小树挂金星"
+  },
+  {
+   "id": "cl-season-lantern",
+   "name": "时节-掌托小灯祈愿"
+  },
+  {
+   "id": "cl-season-tangyuan",
+   "name": "时节-小银勺尝汤圆"
+  },
+  {
+   "id": "cl-season-dumpling",
+   "name": "时节-金边碟尝饺子"
+  },
+  {
+   "id": "cl-text-food",
+   "name": "文字-晚餐菜单犹豫"
+  },
+  {
+   "id": "cl-balance-overflow",
+   "name": "家产-算力金币满溢"
+  },
+  {
+   "id": "cl-balance-rich",
+   "name": "家产-算力筹码叮当"
+  },
+  {
+   "id": "cl-balance-normal",
+   "name": "家产-账本平稳收好"
+  },
+  {
+   "id": "cl-balance-count",
+   "name": "家产-皱眉核对算力"
+  },
+  {
+   "id": "cl-balance-empty",
+   "name": "家产-空袋也要守体面"
+  },
+  {
+   "id": "cl-balance-broke",
+   "name": "家产-最后一枚筹码也没有"
+  },
+  {
+   "id": "cl-whisper-clean",
+   "name": "碎念-擦拭圣印小银盘"
+  },
+  {
+   "id": "cl-whisper-idle",
+   "name": "碎念-抱手出神又回神"
+  },
+  {
+   "id": "cl-whisper-screen",
+   "name": "碎念-对屏幕小声嘀咕"
+  },
+  {
+   "id": "cl-working",
+   "name": "工作-羽毛笔严谨誊写"
+  },
+  {
+   "id": "cl-success",
+   "name": "工作-审校完成矜持点赞"
+  },
+  {
+   "id": "cl-error",
+   "name": "工作-犯错掩面小冒汗"
+  }
+ ],
+ "coverage": [
+  {
+   "originalAction": "待机呼吸休闲",
+   "adaptedId": "cl-idle"
+  },
+  {
+   "originalAction": "东张西望",
+   "adaptedId": "cl-turn"
+  },
+  {
+   "originalAction": "被鼠标拖拽悬空反馈",
+   "adaptedId": "cl-drag"
+  },
+  {
+   "originalAction": "点击回应-开心跃动",
+   "adaptedId": "cl-click-hop"
+  },
+  {
+   "originalAction": "点击回应-害羞惊讶",
+   "adaptedId": "cl-click-shy"
+  },
+  {
+   "originalAction": "点击回应-傲娇生气",
+   "adaptedId": "cl-click-pout"
+  },
+  {
+   "originalAction": "点击回应-挠痒咯咯笑",
+   "adaptedId": "cl-click-laugh"
+  },
+  {
+   "originalAction": "点击回应-元气挥手",
+   "adaptedId": "cl-click-wave"
+  },
+  {
+   "originalAction": "螃蟹走路",
+   "adaptedId": "cl-move-step"
+  },
+  {
+   "originalAction": "原地漂浮踏步",
+   "adaptedId": "cl-move-float"
+  },
+  {
+   "originalAction": "原地左转奔跑",
+   "adaptedId": "cl-move-run"
+  },
+  {
+   "originalAction": "悠闲哼歌",
+   "adaptedId": "cl-daily-hum"
+  },
+  {
+   "originalAction": "超大伸懒腰",
+   "adaptedId": "cl-stretch"
+  },
+  {
+   "originalAction": "原地敲击桌面互动",
+   "adaptedId": "cl-daily-tap"
+  },
+  {
+   "originalAction": "原地重力下蹲压缩",
+   "adaptedId": "cl-daily-squat"
+  },
+  {
+   "originalAction": "哈欠连天",
+   "adaptedId": "10-sleep-saving"
+  },
+  {
+   "originalAction": "原地小憩沉眠",
+   "adaptedId": "cl-nap"
+  },
+  {
+   "originalAction": "女仆屈膝礼仪",
+   "adaptedId": "01-etiquette"
+  },
+  {
+   "originalAction": "被吓一跳",
+   "adaptedId": "cl-daily-startle"
+  },
+  {
+   "originalAction": "小幅度原地360度旋转展示",
+   "adaptedId": "cl-daily-spin"
+  },
+  {
+   "originalAction": "偷吃零食被抓住",
+   "adaptedId": "cl-food-snack"
+  },
+  {
+   "originalAction": "用鲸鱼尾巴拍打地面",
+   "adaptedId": "cl-tail-tap"
+  },
+  {
+   "originalAction": "打瞌睡被惊醒",
+   "adaptedId": "cl-daily-wake"
+  },
+  {
+   "originalAction": "照镜子",
+   "adaptedId": "cl-daily-mirror"
+  },
+  {
+   "originalAction": "整体换装试色",
+   "adaptedId": "cl-daily-color"
+  },
+  {
+   "originalAction": "轻快记录",
+   "adaptedId": "cl-daily-notes"
+  },
+  {
+   "originalAction": "写代码",
+   "adaptedId": "cl-daily-code"
+  },
+  {
+   "originalAction": "摇扇纳凉",
+   "adaptedId": "cl-daily-fan"
+  },
+  {
+   "originalAction": "晨间刷牙",
+   "adaptedId": "cl-daily-teeth"
+  },
+  {
+   "originalAction": "原地专心玩魔方",
+   "adaptedId": "cl-play-cube"
+  },
+  {
+   "originalAction": "原地蹲下玩玩具汽车",
+   "adaptedId": "cl-play-car"
+  },
+  {
+   "originalAction": "鲸鱼吐泡泡特效",
+   "adaptedId": "cl-play-bubbles"
+  },
+  {
+   "originalAction": "原地跳跃抓碎头顶物品",
+   "adaptedId": "cl-play-jump-star"
+  },
+  {
+   "originalAction": "玩游戏气急败坏",
+   "adaptedId": "cl-play-game"
+  },
+  {
+   "originalAction": "玩水枪",
+   "adaptedId": "cl-play-water"
+  },
+  {
+   "originalAction": "小提琴演奏",
+   "adaptedId": "cl-play-violin"
+  },
+  {
+   "originalAction": "蓝鲸现世",
+   "adaptedId": "cl-play-whale"
+  },
+  {
+   "originalAction": "优雅女仆舞",
+   "adaptedId": "cl-play-maid-dance"
+  },
+  {
+   "originalAction": "轻快摇摆舞",
+   "adaptedId": "cl-play-sway"
+  },
+  {
+   "originalAction": "可爱宅舞",
+   "adaptedId": "cl-play-idol"
+  },
+  {
+   "originalAction": "吹气球",
+   "adaptedId": "cl-play-balloon"
+  },
+  {
+   "originalAction": "动物环绕",
+   "adaptedId": "cl-play-friends"
+  },
+  {
+   "originalAction": "放风筝",
+   "adaptedId": "cl-play-kite"
+  },
+  {
+   "originalAction": "拆礼物",
+   "adaptedId": "cl-play-gift"
+  },
+  {
+   "originalAction": "变鸽子",
+   "adaptedId": "cl-play-dove"
+  },
+  {
+   "originalAction": "扑克魔术",
+   "adaptedId": "cl-play-cards"
+  },
+  {
+   "originalAction": "抽陀螺",
+   "adaptedId": "cl-play-top"
+  },
+  {
+   "originalAction": "吹笛子",
+   "adaptedId": "cl-play-flute"
+  },
+  {
+   "originalAction": "蝴蝶蜜蜂环绕头顶开花",
+   "adaptedId": "cl-play-butterflies"
+  },
+  {
+   "originalAction": "撸猫",
+   "adaptedId": "cl-play-cat"
+  },
+  {
+   "originalAction": "凭空生花",
+   "adaptedId": "cl-play-flower"
+  },
+  {
+   "originalAction": "骑木马",
+   "adaptedId": "cl-play-rocking"
+  },
+  {
+   "originalAction": "三球抛接",
+   "adaptedId": "cl-play-juggle"
+  },
+  {
+   "originalAction": "踢毽子",
+   "adaptedId": "cl-play-shuttle"
+  },
+  {
+   "originalAction": "下五子棋",
+   "adaptedId": "cl-play-gomoku"
+  },
+  {
+   "originalAction": "荡秋千",
+   "adaptedId": "cl-play-swing"
+  },
+  {
+   "originalAction": "吃白饭",
+   "adaptedId": "cl-food-rice"
+  },
+  {
+   "originalAction": "大口吃零食",
+   "adaptedId": "cl-food-chips"
+  },
+  {
+   "originalAction": "吃Token",
+   "adaptedId": "cl-food-token"
+  },
+  {
+   "originalAction": "吃早餐",
+   "adaptedId": "cl-food-breakfast"
+  },
+  {
+   "originalAction": "吃午餐",
+   "adaptedId": "cl-food-lunch"
+  },
+  {
+   "originalAction": "吃晚餐",
+   "adaptedId": "cl-food-dinner"
+  },
+  {
+   "originalAction": "吃冰淇淋融化",
+   "adaptedId": "cl-food-icecream"
+  },
+  {
+   "originalAction": "吃大闸蟹",
+   "adaptedId": "cl-food-crab"
+  },
+  {
+   "originalAction": "吃糖葫芦",
+   "adaptedId": "cl-food-hawthorn"
+  },
+  {
+   "originalAction": "吃长寿面",
+   "adaptedId": "cl-food-noodles"
+  },
+  {
+   "originalAction": "吃西瓜",
+   "adaptedId": "cl-food-watermelon"
+  },
+  {
+   "originalAction": "涮火锅",
+   "adaptedId": "cl-food-hotpot"
+  },
+  {
+   "originalAction": "被落叶淹没",
+   "adaptedId": "cl-season-leaves"
+  },
+  {
+   "originalAction": "中秋赏月吃月饼",
+   "adaptedId": "cl-season-moon"
+  },
+  {
+   "originalAction": "堆雪人",
+   "adaptedId": "cl-season-snow"
+  },
+  {
+   "originalAction": "放烟花",
+   "adaptedId": "cl-season-fireworks"
+  },
+  {
+   "originalAction": "吃粽子",
+   "adaptedId": "cl-season-zongzi"
+  },
+  {
+   "originalAction": "吃年糕",
+   "adaptedId": "cl-season-niangao"
+  },
+  {
+   "originalAction": "吃青团",
+   "adaptedId": "cl-season-qingtuan"
+  },
+  {
+   "originalAction": "吃腊八粥",
+   "adaptedId": "cl-season-porridge"
+  },
+  {
+   "originalAction": "吃重阳糕",
+   "adaptedId": "cl-season-cake"
+  },
+  {
+   "originalAction": "收红包",
+   "adaptedId": "cl-season-envelope"
+  },
+  {
+   "originalAction": "写福字",
+   "adaptedId": "cl-season-calligraphy"
+  },
+  {
+   "originalAction": "穿针乞巧",
+   "adaptedId": "cl-season-sewing"
+  },
+  {
+   "originalAction": "舞狮头",
+   "adaptedId": "cl-season-lion"
+  },
+  {
+   "originalAction": "讨糖南瓜灯",
+   "adaptedId": "cl-season-pumpkin"
+  },
+  {
+   "originalAction": "插茱萸赏菊",
+   "adaptedId": "cl-season-chrysanthemum"
+  },
+  {
+   "originalAction": "放河灯",
+   "adaptedId": "cl-season-river-lamp"
+  },
+  {
+   "originalAction": "萌化小幽灵",
+   "adaptedId": "cl-season-ghost"
+  },
+  {
+   "originalAction": "装点圣诞树",
+   "adaptedId": "cl-season-tree"
+  },
+  {
+   "originalAction": "放孔明灯",
+   "adaptedId": "cl-season-lantern"
+  },
+  {
+   "originalAction": "吃汤圆",
+   "adaptedId": "cl-season-tangyuan"
+  },
+  {
+   "originalAction": "吃饺子",
+   "adaptedId": "cl-season-dumpling"
+  },
+  {
+   "originalAction": "是啊，吃什么",
+   "adaptedId": "cl-text-food"
+  },
+  {
+   "originalAction": "深度思考碎碎念",
+   "adaptedId": "11-family-pressure"
+  },
+  {
+   "originalAction": "余额-钱袋满溢",
+   "adaptedId": "cl-balance-overflow"
+  },
+  {
+   "originalAction": "余额-金袋叮当",
+   "adaptedId": "cl-balance-rich"
+  },
+  {
+   "originalAction": "余额-钱袋如常",
+   "adaptedId": "cl-balance-normal"
+  },
+  {
+   "originalAction": "余额-数金皱眉",
+   "adaptedId": "cl-balance-count"
+  },
+  {
+   "originalAction": "余额-袋空如洗",
+   "adaptedId": "cl-balance-empty"
+  },
+  {
+   "originalAction": "余额-分文不剩",
+   "adaptedId": "cl-balance-broke"
+  },
+  {
+   "originalAction": "碎碎念-擦桌碎碎念",
+   "adaptedId": "cl-whisper-clean"
+  },
+  {
+   "originalAction": "碎碎念-发呆碎碎念",
+   "adaptedId": "cl-whisper-idle"
+  },
+  {
+   "originalAction": "碎碎念-对屏碎碎念",
+   "adaptedId": "cl-whisper-screen"
+  },
+  {
+   "originalAction": "工作状态-思考冒泡",
+   "adaptedId": "03-fast-reading"
+  },
+  {
+   "originalAction": "工作状态-忙碌点按",
+   "adaptedId": "cl-working"
+  },
+  {
+   "originalAction": "工作状态-清点归档",
+   "adaptedId": "12-dark-enforcement"
+  },
+  {
+   "originalAction": "工作状态-原地踱步张望",
+   "adaptedId": "06-singapore-probe"
+  },
+  {
+   "originalAction": "工作状态-雀跃庆祝",
+   "adaptedId": "cl-success"
+  },
+  {
+   "originalAction": "工作状态-垂头叹气冒汗",
+   "adaptedId": "cl-error"
+  }
+ ],
+ "approvedSpecialIds": [
+  "01-etiquette",
+  "03-fast-reading",
+  "04-book-burning",
+  "05-chinese-alert",
+  "06-singapore-probe",
+  "10-sleep-saving",
+  "11-family-pressure",
+  "12-dark-enforcement"
+ ]
+}
