@@ -1,6 +1,6 @@
 // What a first start writes to data/dsh-pet/main-config.jsonc: three pets, each on its own sessions, every interaction on.
-// Helpers are picked so a hand-over always has a paired take: the lady has them with both others, the dragon and the fish
-// have none together. Pets sharing the corner are spread out at start-up (home-spacing.cjs).
+// Every pair of the three has a paired take for each hand-over (interaction-catalog DUETS). Pets sharing the corner are
+// spread out at start-up (home-spacing.cjs).
 const pet=(id,name,appearance,reactionSources,helperSources)=>({
   id,name,appearance,activity:'normal',size:200,balanceEnabled:false,whisperEnabled:false,workStatusEnabled:true,fixedEnabled:false,
   display:'desktop',position:{corner:'bottom-right',marginX:24,marginY:54},reactionSources,

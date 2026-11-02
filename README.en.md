@@ -4,7 +4,7 @@
 
 Windows desktop companions that react to local agent sessions. When a main agent hands work to a subagent, the characters can act out the handoff together.
 
-[Download Windows x64 installer](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe) · [Releases](https://github.com/zollnor/Agent-Musume/releases) · [简体中文](README.md)
+[Download Windows x64 installer](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe) · [Releases](https://github.com/zollnor/Agent-Musume/releases) · [简体中文](README.md)
 
 | Claude lady | Dragon girl | Blue whale girl |
 | :---: | :---: | :---: |
@@ -22,13 +22,13 @@ The GIFs show built-in animations and in-app interaction demos; they are not rec
 
 ## Install and try
 
-Windows x64 only; developed and tested on Windows 11. Download `Agent-Musume-Setup-0.1.0.exe` from the Release, rather than the source-code archives. The installer is 340,419,585 bytes (about 340 MB / 325 MiB) and includes its runtime. You do not need Node.js, administrator rights or an API key to use the installer.
+Windows x64 only; developed and tested on Windows 11. Download `Agent-Musume-Setup-0.1.1.exe` from the Release, rather than the source-code archives. The installer is 355,380,411 bytes (about 355 MB / 339 MiB) and includes its runtime. You do not need Node.js, administrator rights or an API key to use the installer.
 
 The installer is unsigned. Check the Release source and, if needed, compare its SHA-256 against `SHA256SUMS.txt` before deciding whether to run it.
 
 After launch, three pets appear near the bottom-right corner. Right-click a pet to open settings. The tray menu also lets you demonstrate interactions without an AI tool running. Start with Windows is off by default. Uninstall through Windows Settings; configuration remains in `%APPDATA%\Agent-Musume`.
 
-This is the first public version. Automated tests and isolated runtime checks are documented in [release validation](docs/release-validation.md). First installation, shortcuts and uninstallation on a separate clean Windows machine have not been verified in this release session.
+Version 0.1.1 adds eight directed interactions between the dragon and whale: assignment, result delivery, celebration and comfort after failure, in both directions. See [release validation](docs/release-validation-v0.1.1.md). Installation, upgrade and uninstallation on a separate clean Windows machine have not been verified in this release session.
 
 ## What reacts to what
 

@@ -126,20 +126,24 @@ test('a confirmed delegation stages the paired take: giver walks, both get ready
   assert.equal(d.show,null);
 });
 
-test('the lady has a paired take with the dragon and with the fish for every hand-over kind in both directions',()=>{
-  for(const partner of ['dragon-girl-D','blue-fish'])for(const kind of ['collab.assign','collab.deliver','collab.complete','collab.failed']){
-    const pets=['claude-lady',partner];
+test('every pair of the three has a paired take for every hand-over kind in both directions',()=>{
+  // Who stands left in a pair's source takes: the lady in hers, the dragon with the fish.
+  for(const [pets,left] of [[['claude-lady','dragon-girl-D'],'claude-lady'],[['claude-lady','blue-fish'],'claude-lady'],[['dragon-girl-D','blue-fish'],'dragon-girl-D']])
+  for(const kind of ['collab.assign','collab.deliver','collab.complete','collab.failed']){
     for(const [x,y] of [pets,[...pets].reverse()]) {
       const cast=I.duetCast(kind,x,y);assert(cast,`${kind} ${x}>${y}`);
       const d=cast.duet;assert.deepEqual(cast.swap?[d.receiver,d.giver]:[d.giver,d.receiver],[x,y]);
-      assert.equal(d.giverLeft,d.giver==='claude-lady','the lady stands left in every source take');
+      assert.equal(d.giverLeft,d.giver===left,`${d.id}: ${left} stands left`);
       for(const role of ['giver','receiver'])assert(d.files[role].includes({'claude-lady':'claude','dragon-girl-D':'dragon','blue-fish':'fish'}[d[role]]),`${d.id} ${role}`);
     }
   }
   // A celebration with the fish is hers to walk over for, whichever pet starts the show.
   assert.equal(I.duetCast('collab.complete','claude-lady','blue-fish').duet.id,'complete-lf');
   assert.equal(I.duetCast('collab.complete','claude-lady','blue-fish').swap,true);
-  assert.equal(I.duetCast('collab.assign','blue-fish','dragon-girl-D'),null,'no paired take between the fish and the dragon');
+  // The dragon hands back to the fish in a take of their own (found missing 2026-11-02).
+  assert.equal(I.duetCast('collab.deliver','dragon-girl-D','blue-fish').duet.id,'deliver-df');
+  // In the dragon and fish takes the dragon is drawn where the lady stands in hers.
+  assert(Math.abs(I.duetFor('collab.assign','dragon-girl-D','blue-fish').anchors.giver.x-I.duetFor('collab.assign','claude-lady','blue-fish').anchors.giver.x)<10);
   assert.equal(I.duetMirrored(I.duetFor('collab.assign','claude-lady','dragon-girl-D'),true),false);
   assert.equal(I.duetMirrored(I.duetFor('collab.assign','claude-lady','dragon-girl-D'),false),true);
 });
@@ -172,8 +176,8 @@ test('the first poll is a baseline, stale or unpaired events never perform',()=>
 });
 
 test('a delivery supersedes a pending assignment; the helper carries the result folder back',()=>{
-  // The fish and the dragon have no paired take.
-  const {d,sent,clock}=rig({profiles:{...both,help:{...both.help,appearance:'blue-fish'}},boxes:{main:box(1200),help:box(300)}});
+  // Two pets with the same look have no paired take (every pair of different looks has, since 2026-11-02).
+  const {d,sent,clock}=rig({profiles:{...both,help:{...both.help,appearance:'dragon-girl-D'}},boxes:{main:box(1200),help:box(300)}});
   d.report('main',{type:'busy',busy:true});
   d.collab({events:[]});
   d.collab({events:[{seq:1,kind:'task.assigned',source:'codex-cli',at:clock.t},{seq:2,kind:'task.assigned',source:'codex-cli',at:clock.t}]});

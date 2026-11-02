@@ -77,9 +77,10 @@
     {open:{'claude-lady':'外面的光线真好。','dragon-girl-D':'外面天不错。','blue-fish':'外面亮晶晶的，好想睡午觉～'},reply:{'claude-lady':'嗯，确实很亮。','dragon-girl-D':'嗯，是个好天。','blue-fish':'晒得暖洋洋的，好舒服～'}},
     {open:{'claude-lady':'……你要是不忙，就陪我坐会儿。','dragon-girl-D':'过来，陪我坐会儿。','blue-fish':'一起躺会儿嘛～就一会儿！'},reply:{'claude-lady':'……既然你这么说了。','dragon-girl-D':'行。','blue-fish':'好呀好呀～'}}
   ];
-  // Paired takes of the lady and the dragon, acted to their personas, for every hand-over kind in both directions
-  // (24 fps, 960×544, one complementary transparent layer per character, Claude always on the left). The giver is the
-  // pet that starts the show and walks over: the assigner, the one delivering, the one reassuring a failed partner.
+  // Paired takes of every pair of the three, acted to their personas, for every hand-over kind in both directions
+  // (24 fps, 960×544, one complementary transparent layer per character, Claude on the left in her pairs, the dragon in hers
+  // with the fish). The giver is the pet that starts the show and walks over: the assigner, the one delivering, the one
+  // reassuring a failed partner.
   // A symmetric take also plays with the roles of the two pets swapped. Every take starts and ends on one side-on pair
   // pose: each pet on its side walk's sideFrame, turned toward the other. The walker stops on that frame, the partner
   // turns to it with its walk's own turn, and after the take both turn back with their walks' turn back (`after` s).
@@ -88,10 +89,14 @@
   // are those idles in source px.
   // The fish stands where the dragon stands, drawn at 0.9 (her desktop scale), 30 px toward Claude (duets.py, pair 'lf').
   const SIDE_ANCHOR={'claude-lady':{x:307.6,feet:500,height:416.5},'dragon-girl-D':{x:620.1,feet:500,height:391},'blue-fish':{x:645.1,feet:500,height:407}};
+  // The dragon and the fish (2026-11-02): the dragon takes the lady's place on the left (her front place moved 362 px left,
+  // duets.py SIDE_SHIFT 'df'), the fish stands where she stands with the lady.
+  const SIDE_ANCHOR_DF={'dragon-girl-D':{x:313.1,feet:500,height:391},'blue-fish':SIDE_ANCHOR['blue-fish']};
   const layer=app=>({'claude-lady':'claude','dragon-girl-D':'dragon','blue-fish':'fish'})[app];
-  const pairTake=(id,kinds,giver,receiver,frames,lines,extra={})=>({id,kinds,giver,receiver,assetRoot:'deskpet-duets',
+  const pairTake=(id,kinds,giver,receiver,frames,lines,{left='claude-lady',anchor=SIDE_ANCHOR,...extra}={})=>({id,kinds,giver,receiver,assetRoot:'deskpet-duets',
     files:{giver:`${id}-${layer(giver)}.webm`,receiver:`${id}-${layer(receiver)}.webm`},frame:{w:960,h:544},duration:frames/24,after:1.7,
-    giverLeft:giver==='claude-lady',anchors:{giver:SIDE_ANCHOR[giver],receiver:SIDE_ANCHOR[receiver]},lines,...extra});
+    giverLeft:giver===left,anchors:{giver:anchor[giver],receiver:anchor[receiver]},lines,...extra});
+  const DF={left:'dragon-girl-D',anchor:SIDE_ANCHOR_DF};
   const DUETS=[
     pairTake('assign-dl',['collab.assign'],'dragon-girl-D','claude-lady',175,{giver:{at:1.2,until:2.8,text:'这块交给你了。'},receiver:{at:4.1,until:5.6,text:'……交给我便是。'}}),
     pairTake('assign-ld',['collab.assign'],'claude-lady','dragon-girl-D',175,{giver:{at:1.2,until:2.9,text:'这份交给你。……我信得过你。'},receiver:{at:4.0,until:5.4,text:'行，交给我。'}}),
@@ -107,7 +112,15 @@
     pairTake('deliver-fl',['collab.deliver'],'blue-fish','claude-lady',175,{giver:{at:0.9,until:2.6,text:'克洛德～做完啦，能赏碗白饭吗？'},receiver:{at:4.3,until:5.7,text:'谢、谢谢。……咳，辛苦了。'}}),
     pairTake('complete-lf',['collab.complete'],'blue-fish','claude-lady',158,{giver:{at:0.6,until:2.0,text:'完成啦！开饭开饭！'},receiver:{at:2.8,until:4.4,text:'和你一起……也不坏。'}},{symmetric:true}),
     pairTake('failed-lf',['collab.failed'],'claude-lady','blue-fish',158,{receiver:{at:0.3,until:1.9,text:'呜……失败了，能当没看见吗？'},giver:{at:2.4,until:4.0,text:'别慌，我陪你一起看。……只是顺路。'}}),
-    pairTake('failed-fl',['collab.failed'],'blue-fish','claude-lady',158,{receiver:{at:0.3,until:1.9,text:'……这次是我疏忽了。'},giver:{at:2.5,until:4.1,text:'克洛德不难过，我分你半碗白饭～'}})
+    pairTake('failed-fl',['collab.failed'],'blue-fish','claude-lady',158,{receiver:{at:0.3,until:1.9,text:'……这次是我疏忽了。'},giver:{at:2.5,until:4.1,text:'克洛德不难过，我分你半碗白饭～'}}),
+    // The dragon and the fish (2026-11-02): the big sister indulges the lazy little maid girl, who calls her G姐.
+    pairTake('assign-df',['collab.assign'],'dragon-girl-D','blue-fish',175,{giver:{at:1.2,until:2.8,text:'这块你来，不会就问我。'},receiver:{at:4.0,until:5.5,text:'G姐说的我马上办……先扒口饭～'}},DF),
+    pairTake('assign-fd',['collab.assign'],'blue-fish','dragon-girl-D',175,{giver:{at:1.2,until:3.0,text:'G姐～这个你帮我弄嘛，求你啦～'},receiver:{at:4.1,until:5.5,text:'行，交给我。你歇着去。'}},DF),
+    pairTake('deliver-df',['collab.deliver'],'dragon-girl-D','blue-fish',175,{giver:{at:0.9,until:2.4,text:'办完了，拿去。'},receiver:{at:4.2,until:5.6,text:'谢谢G姐～今晚加饭！'}},DF),
+    pairTake('deliver-fd',['collab.deliver'],'blue-fish','dragon-girl-D',175,{giver:{at:0.9,until:2.6,text:'G姐～做完啦，赏碗白饭嘛～'},receiver:{at:4.3,until:5.7,text:'干得不错，饭管够。'}},DF),
+    pairTake('complete-df',['collab.complete'],'dragon-girl-D','blue-fish',158,{giver:{at:0.6,until:2.0,text:'收工！走，姐请你吃饭。'},receiver:{at:2.8,until:4.4,text:'好耶～开饭开饭！'}},{...DF,symmetric:true}),
+    pairTake('failed-df',['collab.failed'],'dragon-girl-D','blue-fish',158,{receiver:{at:0.3,until:1.9,text:'呜……搞砸了……'},giver:{at:2.5,until:3.9,text:'没事，姐给你兜着。'}},DF),
+    pairTake('failed-fd',['collab.failed'],'blue-fish','dragon-girl-D',158,{receiver:{at:0.3,until:1.9,text:'……这次是我疏忽了。'},giver:{at:2.5,until:4.1,text:'G姐不怕，我给你捶捶背～'}},DF)
   ];
   const PROPS={'collab.assign':'scroll','collab.deliver':'folder'};
 

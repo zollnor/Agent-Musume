@@ -4,11 +4,13 @@
 
 大小姐矜持点赞，龙娘爽朗大笑，大肥鱼在旁边跳舞。你派出子代理，她们走到一起交接任务；结果回来了，再把这一轮工作好好收尾。
 
-[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
+[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
 
 Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 ## 动画演示
+
+**v0.1.1 更新**：新增龙娘与大肥鱼之间双向派发任务、交回结果、共同庆祝与失败安慰，共 8 种互动。
 
 ### 三位角色，三种陪伴
 
@@ -28,7 +30,7 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 GIF 展示程序内置动作与互动演出。真实联动的触发条件与一轮完成的含义，见[宠物互动](#宠物互动)。
 
 - **跟着 AI 工作**：读取本机 ChatGPT 桌面版、Codex CLI、Claude Code、DeepSeek Harness 的会话状态，呈现思考、执行工具、等待确认、完成和出错。
-- **把协作演出来**：主宠物与助手分别对应会话和子代理；大小姐 × 龙娘、大小姐 × 大肥鱼有专门的双人动画。
+- **把协作演出来**：主宠物与助手分别对应会话和子代理；三位角色两两之间都有专用双人动画，支持双向互动。
 - **平时也有小动作**：拖动、抛接、点击回应、随机走动和闲聊，可暂停走动或安静 30 分钟。
 - **本机运行**：不额外调用模型，不需要 API Key；没有兼容的 AI 工具也能看日常动作，或从托盘菜单演示互动。
 
@@ -44,15 +46,15 @@ GIF 展示程序内置动作与互动演出。真实联动的触发条件与一�
 
 ### 安装包（推荐）
 
-1. [下载 v0.1.0 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe)（340,419,585 字节，约 340 MB / 325 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
+1. [下载 v0.1.1 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe)（355,380,411 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
 2. 双击安装，完成后程序自动启动，桌面右下角出现三只宠物。
 3. 右键宠物打开设置；从托盘菜单选择“演示宠物互动”，可以先看联动效果。
 
 不需要管理员权限，也不需要 Node.js，装好后会自动启动，桌面和开始菜单都有快捷方式。
 
-安装包目前没有代码签名，Windows 可能提示“Windows 已保护你的电脑”。请先确认下载自本仓库的 Release，并按需要比对 [SHA256SUMS.txt](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/SHA256SUMS.txt)；确认来源后，可在提示中选择“更多信息”→“仍要运行”。
+安装包目前没有代码签名，Windows 可能提示“Windows 已保护你的电脑”。请先确认下载自本仓库的 Release，并按需要比对 [SHA256SUMS.txt](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/SHA256SUMS.txt)；确认来源后，可在提示中选择“更多信息”→“仍要运行”。
 
-> v0.1.0 是首个公开版本。自动化测试和隔离运行验证见 [发布核对记录](docs/release-validation.md)。另一台干净 Windows 电脑上的首次安装、快捷方式和卸载流程，尚无本次实测记录。
+> v0.1.1 补充了龙娘与大肥鱼的 8 种双向互动。测试与安装包核对见 [发布核对记录](docs/release-validation-v0.1.1.md)。另一台干净 Windows 电脑上的安装、升级和卸载全流程，尚无本次实测记录。
 
 卸载：在 Windows 的“设置 > 应用 > 已安装的应用”里卸载。配置保留在 `%APPDATA%\Agent-Musume`，不需要的话可以手动删除。
 
@@ -182,7 +184,7 @@ npm run package   # 生成 release/ 下的安装包
 
 | 脚本 | 内容 | 影响 |
 | --- | --- | --- |
-| `interaction-verification.mjs <场景>` | 互动演出，场景有 `delegation`、`claude`、`social`、`fish`、`lf` | 独立数据目录，不影响正在运行的桌宠 |
+| `interaction-verification.mjs <场景>` | 互动演出，场景有 `delegation`、`claude`、`social`、`fish`、`lf`、`df` | 独立数据目录，不影响正在运行的桌宠 |
 | `appearance-verification.mjs` | 形象选择和切换 | 独立数据目录 |
 | `source-verification.mjs` | 来源隔离和优先级 | 需要已有配置，结束时恢复 |
 | `settings-verification.mjs` | 设置窗口全流程 | 会重启桌宠 |

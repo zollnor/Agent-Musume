@@ -1,6 +1,6 @@
 {
   "name": "agent-musume",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Desktop companions that react to your local AI agent sessions: ChatGPT desktop, Codex CLI, Claude Code and DeepSeek Harness",

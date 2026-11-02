@@ -22,6 +22,9 @@ const pets=scenario==='delegation'?[
 ]:scenario==='lf'?[
   pet('qa-claude','测试 · 大小姐','claude-lady',40,{reactionSources:[],interaction:{idle:false}}),
   pet('qa-fish','测试 · 肥鱼','blue-fish',560,{reactionSources:[],interaction:{idle:false}})
+]:scenario==='df'?[
+  pet('qa-dragon','测试 · 龙娘','dragon-girl-D',40,{reactionSources:[],interaction:{idle:false}}),
+  pet('qa-fish','测试 · 肥鱼','blue-fish',560,{reactionSources:[],interaction:{idle:false}})
 ]:scenario==='fish'?[
   pet('qa-fish','测试 · 肥鱼','blue-fish',40,{reactionSources:['codex-cli','dsh-desktop'],interaction:{idle:false}}),
   pet('qa-dragon','测试 · 龙娘','dragon-girl-D',600,{reactionSources:['chatgpt-desktop'],interaction:{idle:false}})
@@ -59,7 +62,7 @@ const said=phase=>new Set(log.filter(f=>f.phase===phase).flatMap(f=>f.rows.flatM
 const checks=[];let proc;
 try {
   const out=await open(join(data,'runtime.log'),'a');
-  proc=spawn(process.execPath,[join(APP_ROOT,'src','main.mjs')],{cwd:APP_ROOT,windowsHide:true,stdio:['ignore',out.fd,out.fd],env:{...process.env,AGENT_MUSUME_DATA:data,AGENT_MUSUME_SESSIONS:codex,AGENT_MUSUME_CLAUDE_HOME:claude,AGENT_MUSUME_DSH_HOME:dshHome,AGENT_MUSUME_STAGE_LOG:'1',AGENT_MUSUME_SETTINGS_QA:['social','fish','lf'].includes(scenario)?'1':'0'}});
+  proc=spawn(process.execPath,[join(APP_ROOT,'src','main.mjs')],{cwd:APP_ROOT,windowsHide:true,stdio:['ignore',out.fd,out.fd],env:{...process.env,AGENT_MUSUME_DATA:data,AGENT_MUSUME_SESSIONS:codex,AGENT_MUSUME_CLAUDE_HOME:claude,AGENT_MUSUME_DSH_HOME:dshHome,AGENT_MUSUME_STAGE_LOG:'1',AGENT_MUSUME_SETTINGS_QA:['social','fish','lf','df'].includes(scenario)?'1':'0'}});
   for(let i=0;i<120;i++){try{if((await request('/control/status')).sourcesReady)break;}catch{}await sleep(150);}
   if(scenario==='delegation') {
     await record('parent.jsonl',{type:'session_meta',payload:{id:'qa-parent-thread',source:'cli',originator:'codex-tui'}});
@@ -84,8 +87,8 @@ try {
     await film('complete',7000);
     assert(kinds('complete').has('collab.complete'));
     checks.push('assign-paired-take','helper-follows-subagent','deliver-folder','team-complete');
-  } else if(scenario==='lf') {
-    // Every kind of hand-over between the lady and the fish plays as a paired take; the directed ones twice, so each leads once.
+  } else if(scenario==='lf'||scenario==='df') {
+    // Every kind of hand-over between the two plays as a paired take; the directed ones twice, so each leads once.
     await sleep(3500);
     assert.equal((await capture('boot')).rows.length,2,'two pet windows');
     for(const [phase,kind] of [['assign-1','collab.assign'],['assign-2','collab.assign'],['deliver-1','collab.deliver'],['deliver-2','collab.deliver'],['complete','collab.complete'],['failed-1','collab.failed'],['failed-2','collab.failed']]){
@@ -95,7 +98,7 @@ try {
       assert(log.some(f=>f.phase===phase&&f.rows.every(r=>r.duet.length)),'both pets played their layer of the paired take: '+phase);
       await sleep(4000);
     }
-    checks.push('lady-fish-paired-takes');
+    checks.push(scenario==='lf'?'lady-fish-paired-takes':'dragon-fish-paired-takes');
   } else if(scenario==='fish') {
     // The fish speaks in its own voice: persona work lines with the session above them, chat stays light.
     await record('cli.jsonl',{type:'session_meta',payload:{id:'qa-cli',source:'cli',originator:'codex-tui'}});
