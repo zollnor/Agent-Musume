@@ -22,7 +22,7 @@ The GIFs show built-in animations and in-app interaction demos; they are not rec
 
 ## Install and try
 
-Windows x64 only; developed and tested on Windows 11. Download `Agent-Musume-Setup-0.1.1.exe` from the Release, rather than the source-code archives. The installer is 355,380,411 bytes (about 355 MB / 339 MiB) and includes its runtime. You do not need Node.js, administrator rights or an API key to use the installer.
+Windows x64 only; developed and tested on Windows 11. Download `Agent-Musume-Setup-0.1.1.exe` from the Release, rather than the source-code archives. The installer is 355,381,127 bytes (about 355 MB / 339 MiB) and includes its runtime. You do not need Node.js, administrator rights or an API key to use the installer.
 
 The installer is unsigned. Check the Release source and, if needed, compare its SHA-256 against `SHA256SUMS.txt` before deciding whether to run it.
 

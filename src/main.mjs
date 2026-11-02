@@ -19,6 +19,7 @@ import { PANEL } from './panel.mjs';
 import {LiveWriterEvidence,SessionSourceRouter} from './session-source-router.mjs';
 import {CollabTracker} from './collab-tracker.mjs';
 
+const APP_VERSION=JSON.parse(readFileSync(join(APP_ROOT,'package.json'),'utf8')).version;
 const data=process.env.AGENT_MUSUME_DATA??join(APP_ROOT,'data');
 await mkdir(data,{recursive:true});
 const lockPath=join(data,'process.lock');
@@ -79,7 +80,7 @@ function notifyReactions(){
   setImmediate(()=>{notifyQueued=false;const before=reactionRev,next=reactions();if(next.rev!==before)for(const answer of [...reactionWaiters])answer(next);});
 }
 setInterval(notifyReactions,1000).unref(); // terminal states and helper results expire with time, not with a record
-const snapshot=()=>({application:'agent-musume',version:'0.1.0',...adapter.status(),mode:demo?'demo':'live',demoLabel:demo?.label??null,watcher:watcher?.status()??{running:false,sourceAvailable:false},dsh:dshMonitor?.status()??{running:false,sourceAvailable:false},sourceRouting:sourceEvidence?.status()??{available:false},sourcesReady,sources:sourceStates(),claudeWatcher:claudeMonitor?.status()??{running:false,sourceAvailable:false}});
+const snapshot=()=>({application:'agent-musume',version:APP_VERSION,...adapter.status(),mode:demo?'demo':'live',demoLabel:demo?.label??null,watcher:watcher?.status()??{running:false,sourceAvailable:false},dsh:dshMonitor?.status()??{running:false,sourceAvailable:false},sourceRouting:sourceEvidence?.status()??{available:false},sourcesReady,sources:sourceStates(),claudeWatcher:claudeMonitor?.status()??{running:false,sourceAvailable:false}});
 function endDemo() {
   if(!demo)return;clearTimeout(demoTimer);demo=null;
   emitDemo('turn/end',{reason:{kind:'aborted'}});adapter.republish();notifyReactions();

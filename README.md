@@ -46,7 +46,7 @@ GIF 展示程序内置动作与互动演出。真实联动的触发条件与一�
 
 ### 安装包（推荐）
 
-1. [下载 v0.1.1 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe)（355,380,411 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
+1. [下载 v0.1.1 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe)（355,381,127 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
 2. 双击安装，完成后程序自动启动，桌面右下角出现三只宠物。
 3. 右键宠物打开设置；从托盘菜单选择“演示宠物互动”，可以先看联动效果。
 
