@@ -12,7 +12,24 @@ This preview combines two synchronized animation layers shipped with the app. It
 
 | Claude lady | Dragon girl | Blue whale girl |
 | :---: | :---: | :---: |
-| <img src="docs/media/claude-coding.gif" alt="Claude lady typing" width="260"> | <img src="docs/media/dragon-thinking.gif" alt="Dragon girl thinking" width="260"> | <img src="docs/media/fish-dance.gif" alt="Blue whale girl dancing" width="260"> |
+| <img src="docs/media/claude-approval.gif" alt="Claude lady giving a reserved thumbs-up after review" width="220"> | <img src="docs/media/dragon-laugh.gif" alt="Dragon girl laughing heartily" width="220"> | <img src="docs/media/fish-dance.gif" alt="Blue whale girl dancing" width="220"> |
+| Review complete: a reserved thumbs-up | A hearty laugh | A maid dance |
+
+## Three agent interactions
+
+### The whale gives Claude a task
+
+![The blue whale girl handing a task to the Claude lady](docs/media/duet-fish-assign.gif)
+
+### The whale returns the results to Claude
+
+![The blue whale girl delivering the results to the Claude lady](docs/media/duet-fish-return.gif)
+
+### Claude and the dragon celebrate a completed turn
+
+![The Claude lady and dragon girl celebrating together](docs/media/duet-claude-dragon-celebrate.gif)
+
+These previews also combine synchronized animation layers from the app. The celebration corresponds to the main turn ending after a collaborative result has returned; it does not certify the success of a long-running goal.
 
 ## Install and try
 

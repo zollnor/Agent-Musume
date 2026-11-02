@@ -4,11 +4,13 @@
 
 | 文件 | 原始素材 |
 | --- | --- |
-| `claude-coding.gif` | `pets/claude-lady/webm/学业-琥珀键盘敲代码.webm` |
-| `dragon-thinking.gif` | `pets/dragon-girl-D/webm/工作-思考.webm` |
+| `claude-approval.gif` | `pets/claude-lady/webm/工作-审校完成矜持点赞.webm` |
+| `dragon-laugh.gif` | `pets/dragon-girl-D/webm/点击-爽朗大笑.webm` |
 | `fish-dance.gif` | `vendor/dsh-pet/assets/webm/优雅女仆舞.webm` |
 | `duet-handoff.gif` | `pets/duets/assign-ld-{claude,dragon}.webm`，按原始画布坐标叠合 |
+| `duet-fish-assign.gif` | `pets/duets/assign-fl-{claude,fish}.webm`，大肥鱼向大小姐派发任务 |
 | `duet-fish-return.gif` | `pets/duets/deliver-fl-{claude,fish}.webm`，按原始画布坐标叠合 |
+| `duet-claude-dragon-celebrate.gif` | `pets/duets/complete-{claude,dragon}.webm`，两位共同庆祝 |
 
 GIF 采用每秒 12 帧、循环播放。裁剪、背景合成和调色用于适配 README；程序使用原始 WebM。双人预览保留同步时间关系和原始角色站位。
 

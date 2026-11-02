@@ -2,7 +2,7 @@
 
 **让 Agent 的工作，变成桌面上的小剧场。**
 
-大小姐埋头敲代码，龙娘认真思考，大肥鱼在旁边跳舞。你派出子代理，她们走到一起交接任务；结果回来了，再把这一轮工作好好收尾。
+大小姐矜持点赞，龙娘爽朗大笑，大肥鱼在旁边跳舞。你派出子代理，她们走到一起交接任务；结果回来了，再把这一轮工作好好收尾。
 
 [**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
 
@@ -22,15 +22,31 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 | Claude大小姐 | 龙娘 | 蓝色大肥鱼 |
 | :---: | :---: | :---: |
-| <img src="docs/media/claude-coding.gif" alt="Claude大小姐敲琥珀键盘" width="220"> | <img src="docs/media/dragon-thinking.gif" alt="龙娘认真思考" width="220"> | <img src="docs/media/fish-dance.gif" alt="蓝色大肥鱼跳女仆舞" width="220"> |
-| 琥珀键盘敲代码 | 托腮思考 | 优雅女仆舞 |
+| <img src="docs/media/claude-approval.gif" alt="Claude大小姐审校完成后矜持点赞" width="220"> | <img src="docs/media/dragon-laugh.gif" alt="龙娘爽朗大笑" width="220"> | <img src="docs/media/fish-dance.gif" alt="蓝色大肥鱼跳女仆舞" width="220"> |
+| 审校完成，矜持点赞 | 爽朗大笑 | 优雅女仆舞 |
 | 112 段单人动画 | 112 段单人动画 | 107 段单人动画 |
 
-### 大肥鱼把结果交给大小姐
+### Agent 之间的三组联动
+
+#### 大肥鱼给大小姐派任务
+
+![蓝色大肥鱼把任务交给Claude大小姐，大小姐接下任务](docs/media/duet-fish-assign.gif)
+
+大肥鱼：“克洛德～这个拜托你啦，你最靠谱了！”大小姐：“你拜托的话……当然可以。”
+
+#### 大肥鱼向大小姐交回结果
 
 ![蓝色大肥鱼把整理好的结果交给Claude大小姐](docs/media/duet-fish-return.gif)
 
-同样来自程序内置的双人同步素材。除了交接，还支持共同完成、失败安慰、回应同伴和空闲闲聊。完整触发条件见[宠物互动](#宠物互动)。
+大肥鱼：“克洛德～做完啦，能赏碗白饭吗？”大小姐：“谢、谢谢。……咳，辛苦了。”
+
+#### 大小姐和龙娘庆祝任务完成
+
+![Claude大小姐和龙娘一起庆祝这一轮任务完成](docs/media/duet-claude-dragon-celebrate.gif)
+
+龙娘：“这一轮，收工。”大小姐：“……配合得还算不错。”
+
+这三组同样来自程序内置的双人同步素材。上面的台词来自各片段在程序中的互动配置；GIF 展示角色动作。共同庆祝对应的是协作回传后主会话这一轮结束。完整触发条件见[宠物互动](#宠物互动)。
 
 - **跟着 AI 工作**：读取本机 ChatGPT 桌面版、Codex CLI、Claude Code、DeepSeek Harness 的会话状态，呈现思考、执行工具、等待确认、完成和出错。
 - **把协作演出来**：主宠物与助手分别对应会话和子代理；大小姐 × 龙娘、大小姐 × 大肥鱼有专门的双人动画。
