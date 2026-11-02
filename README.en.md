@@ -15,10 +15,10 @@ Windows desktop companions that react to local agent sessions. When a main agent
 
 | Assign a task | Return the results | Celebrate together |
 | :---: | :---: | :---: |
-| <img src="docs/media/duet-fish-assign.gif" alt="The whale gives Claude a task" width="220"> | <img src="docs/media/duet-fish-return.gif" alt="The whale returns results to Claude" width="220"> | <img src="docs/media/duet-claude-dragon-celebrate.gif" alt="Claude and the dragon celebrate together" width="220"> |
-| Whale → Claude | Whale → Claude | Claude × Dragon |
+| <img src="docs/media/duet-fish-assign.gif" alt="The whale gives Claude a task" width="220"> | <img src="docs/media/duet-dragon-fish-return.gif" alt="The dragon returns results to the whale" width="220"> | <img src="docs/media/duet-claude-dragon-celebrate.gif" alt="Claude and the dragon celebrate together" width="220"> |
+| Whale → Claude | Dragon → Whale | Claude × Dragon |
 
-The GIFs combine built-in animation layers; they are not recordings of live model runs. The celebration marks a completed collaborative turn, not the success of a long-running goal.
+The GIFs show built-in animations and in-app interaction demos; they are not recordings of live model runs. The celebration marks a completed collaborative turn, not the success of a long-running goal.
 
 ## Install and try
 

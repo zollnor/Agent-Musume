@@ -22,10 +22,10 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 | 派发任务 | 交回结果 | 一起庆祝 |
 | :---: | :---: | :---: |
-| <img src="docs/media/duet-fish-assign.gif" alt="大肥鱼给大小姐派任务" width="220"> | <img src="docs/media/duet-fish-return.gif" alt="大肥鱼向大小姐交回结果" width="220"> | <img src="docs/media/duet-claude-dragon-celebrate.gif" alt="大小姐与龙娘共同庆祝" width="220"> |
-| 大肥鱼 → 大小姐 | 大肥鱼 → 大小姐 | 大小姐 × 龙娘 |
+| <img src="docs/media/duet-fish-assign.gif" alt="大肥鱼给大小姐派任务" width="220"> | <img src="docs/media/duet-dragon-fish-return.gif" alt="龙娘向大肥鱼交回结果" width="220"> | <img src="docs/media/duet-claude-dragon-celebrate.gif" alt="大小姐与龙娘共同庆祝" width="220"> |
+| 大肥鱼 → 大小姐 | 龙娘 → 大肥鱼 | 大小姐 × 龙娘 |
 
-GIF 为程序内置素材的合成演示。真实联动的触发条件与一轮完成的含义，见[宠物互动](#宠物互动)。
+GIF 展示程序内置动作与互动演出。真实联动的触发条件与一轮完成的含义，见[宠物互动](#宠物互动)。
 
 - **跟着 AI 工作**：读取本机 ChatGPT 桌面版、Codex CLI、Claude Code、DeepSeek Harness 的会话状态，呈现思考、执行工具、等待确认、完成和出错。
 - **把协作演出来**：主宠物与助手分别对应会话和子代理；大小姐 × 龙娘、大小姐 × 大肥鱼有专门的双人动画。
