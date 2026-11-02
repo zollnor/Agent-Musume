@@ -2,7 +2,7 @@
 
 **让 Agent 的工作，变成桌面上的小剧场。**
 
-大小姐矜持点赞，龙娘爽朗大笑，大肥鱼在旁边跳舞。你派出子代理，她们走到一起交接任务；结果回来了，再把这一轮工作好好收尾。
+AgentMusume 是一款与 AI Agent 会话联动的 AI 娘桌宠。三位角色可分别跟随 ChatGPT/Codex、Claude Code 和 DeepSeek Harness 的本地会话，随思考、工具执行、等待确认和一轮完成等状态作出相应反应；当 Agent 之间派发子任务、交回结果或协作完成时，还会以桌宠间的互动动画呈现，让工作状态与协作过程直观地展现在桌面上。
 
 [**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
 

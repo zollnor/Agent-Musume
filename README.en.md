@@ -2,7 +2,7 @@
 
 **Turn your AI agents’ work into a little desktop theater.**
 
-Windows desktop companions that react to local agent sessions. When a main agent hands work to a subagent, the characters can act out the handoff together.
+AgentMusume is a Windows desktop companion app that reacts to AI agent sessions. Its three characters can follow local sessions from ChatGPT/Codex, Claude Code and DeepSeek Harness, responding to thinking, tool use, requests for confirmation and turn completion. Character interactions also reflect subtask handoffs, result delivery and completed collaborative turns, making agent activity and coordination visible on your desktop.
 
 [Download Windows x64 installer](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe) · [Releases](https://github.com/zollnor/Agent-Musume/releases) · [简体中文](README.md)
 
