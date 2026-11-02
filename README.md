@@ -4,11 +4,13 @@
 
 大小姐埋头敲代码，龙娘认真思考，大肥鱼在旁边跳舞。你派出子代理，她们走到一起交接任务；结果回来了，再把这一轮工作好好收尾。
 
-[**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
+[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
 
 Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
-## Agent 交接任务，她们也当面交接
+## 动画演示
+
+### Agent 交接任务，她们也当面交接
 
 ![Claude大小姐把任务交给龙娘，两位角色同步播放交接动作](docs/media/duet-handoff.gif)
 
@@ -16,7 +18,7 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 *上图由程序内置的双人同步动画合成，用于展示动作；不是一次真实模型调用的屏幕录制。*
 
-## 三位角色，三种陪伴
+### 三位角色，三种陪伴
 
 | Claude大小姐 | 龙娘 | 蓝色大肥鱼 |
 | :---: | :---: | :---: |
@@ -24,14 +26,11 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 | 琥珀键盘敲代码 | 托腮思考 | 优雅女仆舞 |
 | 112 段单人动画 | 112 段单人动画 | 107 段单人动画 |
 
-<details>
-<summary><strong>再看一组联动：大肥鱼把结果交给大小姐</strong></summary>
+### 大肥鱼把结果交给大小姐
 
 ![蓝色大肥鱼把整理好的结果交给Claude大小姐](docs/media/duet-fish-return.gif)
 
 同样来自程序内置的双人同步素材。除了交接，还支持共同完成、失败安慰、回应同伴和空闲闲聊。完整触发条件见[宠物互动](#宠物互动)。
-
-</details>
 
 - **跟着 AI 工作**：读取本机 ChatGPT 桌面版、Codex CLI、Claude Code、DeepSeek Harness 的会话状态，呈现思考、执行工具、等待确认、完成和出错。
 - **把协作演出来**：主宠物与助手分别对应会话和子代理；大小姐 × 龙娘、大小姐 × 大肥鱼有专门的双人动画。
