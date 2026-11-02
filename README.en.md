@@ -6,10 +6,6 @@ Windows desktop companions that react to local agent sessions. When a main agent
 
 [Download Windows x64 installer](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.0/Agent-Musume-Setup-0.1.0.exe) · [Releases](https://github.com/zollnor/Agent-Musume/releases) · [简体中文](README.md)
 
-![Claude lady handing a task to the dragon girl](docs/media/duet-handoff.gif)
-
-This preview combines two synchronized animation layers shipped with the app. It is an animation demonstration, not a recording of a live model run.
-
 | Claude lady | Dragon girl | Blue whale girl |
 | :---: | :---: | :---: |
 | <img src="docs/media/claude-approval.gif" alt="Claude lady giving a reserved thumbs-up after review" width="220"> | <img src="docs/media/dragon-laugh.gif" alt="Dragon girl laughing heartily" width="220"> | <img src="docs/media/fish-dance.gif" alt="Blue whale girl dancing" width="220"> |
@@ -17,19 +13,12 @@ This preview combines two synchronized animation layers shipped with the app. It
 
 ## Three agent interactions
 
-### The whale gives Claude a task
+| Assign a task | Return the results | Celebrate together |
+| :---: | :---: | :---: |
+| <img src="docs/media/duet-fish-assign.gif" alt="The whale gives Claude a task" width="220"> | <img src="docs/media/duet-fish-return.gif" alt="The whale returns results to Claude" width="220"> | <img src="docs/media/duet-claude-dragon-celebrate.gif" alt="Claude and the dragon celebrate together" width="220"> |
+| Whale → Claude | Whale → Claude | Claude × Dragon |
 
-![The blue whale girl handing a task to the Claude lady](docs/media/duet-fish-assign.gif)
-
-### The whale returns the results to Claude
-
-![The blue whale girl delivering the results to the Claude lady](docs/media/duet-fish-return.gif)
-
-### Claude and the dragon celebrate a completed turn
-
-![The Claude lady and dragon girl celebrating together](docs/media/duet-claude-dragon-celebrate.gif)
-
-These previews also combine synchronized animation layers from the app. The celebration corresponds to the main turn ending after a collaborative result has returned; it does not certify the success of a long-running goal.
+The GIFs combine built-in animation layers; they are not recordings of live model runs. The celebration marks a completed collaborative turn, not the success of a long-running goal.
 
 ## Install and try
 
