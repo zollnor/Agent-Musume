@@ -22,7 +22,7 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 | Claude大小姐 | 龙娘 | 蓝色大肥鱼 |
 | :---: | :---: | :---: |
-| <img src="docs/media/claude-coding.gif" alt="Claude大小姐敲琥珀键盘" width="260"> | <img src="docs/media/dragon-thinking.gif" alt="龙娘认真思考" width="260"> | <img src="docs/media/fish-dance.gif" alt="蓝色大肥鱼跳女仆舞" width="260"> |
+| <img src="docs/media/claude-coding.gif" alt="Claude大小姐敲琥珀键盘" width="220"> | <img src="docs/media/dragon-thinking.gif" alt="龙娘认真思考" width="220"> | <img src="docs/media/fish-dance.gif" alt="蓝色大肥鱼跳女仆舞" width="220"> |
 | 琥珀键盘敲代码 | 托腮思考 | 优雅女仆舞 |
 | 112 段单人动画 | 112 段单人动画 | 107 段单人动画 |
 
