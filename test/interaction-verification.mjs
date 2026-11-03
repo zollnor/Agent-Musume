@@ -22,6 +22,9 @@ const pets=scenario==='delegation'?[
 ]:scenario==='lf'?[
   pet('qa-claude','测试 · 大小姐','claude-lady',40,{reactionSources:[],interaction:{idle:false}}),
   pet('qa-fish','测试 · 肥鱼','blue-fish',560,{reactionSources:[],interaction:{idle:false}})
+]:scenario==='relay'?[
+  pet('qa-claude','测试 · 大小姐','claude-lady',40,{reactionSources:['claude-code'],interaction:{idle:false}}),
+  pet('qa-dragon','测试 · 龙娘','dragon-girl-D',600,{reactionSources:['chatgpt-desktop'],interaction:{idle:false}})
 ]:scenario==='df'?[
   pet('qa-dragon','测试 · 龙娘','dragon-girl-D',40,{reactionSources:[],interaction:{idle:false}}),
   pet('qa-fish','测试 · 肥鱼','blue-fish',560,{reactionSources:[],interaction:{idle:false}})
@@ -171,6 +174,41 @@ try {
     await film('complete',7000);
     assert(kinds('complete').has('collab.complete'));
     checks.push('claude-agent-assign','fish-follows-subagent','claude-handback-deliver','claude-team-complete');
+  } else if(scenario==='relay') {
+    // Hand-overs to an agent that is already open, played by stand-in processes (test/fixtures/fake-harness.cs, no
+    // model): ChatGPT types into a terminal pane where Claude Code runs, Claude queues a message for a ChatGPT desktop
+    // session, ChatGPT presses keys in a Herdr pane. The recipient's turn is written by this test.
+    const fakes=join(data,'fakes'),as=(folder,name)=>join(fakes,folder,name);
+    await mkdir(fakes,{recursive:true});
+    await new Promise((resolve,reject)=>spawn('C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe',['-nologo','-out:'+join(fakes,'fake.exe'),join(APP_ROOT,'test','fixtures','fake-harness.cs')],{windowsHide:true,stdio:'ignore'}).on('exit',c=>c===0?resolve():reject(new Error('csc '+c))));
+    for(const [folder,name] of [['OpenAI.Codex','ChatGPT.exe'],['claude','claude.exe'],['term','MyTerminal.exe'],['codex','codex.exe'],['herdr','herdr.exe']]){await mkdir(join(fakes,folder),{recursive:true});await writeFile(as(folder,name),await readFile(join(fakes,'fake.exe')));}
+    const harness=(exe,...command)=>spawn(exe,['1500','0','--spawn',...command],{windowsHide:true,stdio:'ignore'});
+    const projects=join(claude,'projects','qa'),main=join(projects,'qa-session.jsonl');await mkdir(projects,{recursive:true});await writeFile(main,'');
+    const peer=status=>writeFile(join(claude,'sessions','qa.json'),JSON.stringify({sessionId:'qa-session',pid:process.pid,entrypoint:'cli',kind:'interactive',status}));
+    const line=(file,r)=>appendFile(file,JSON.stringify({...r,timestamp:new Date().toISOString()})+'\n');
+    const thread='019f5bc0-a9cb-76b2-922e-ea1d48f629b1',desktop=`rollout-2026-11-03T00-00-00-${thread}.jsonl`;
+    await record(desktop,{type:'session_meta',payload:{id:thread,source:'vscode',originator:'Codex Desktop'}});
+    await peer('idle');await sleep(3500);
+    assert.equal((await capture('boot')).rows.length,2,'two pet windows');
+    harness(as('OpenAI.Codex','ChatGPT.exe'),as('term','MyTerminal.exe'),'cli','send-text','--pane-id','3','synthetic task');
+    await sleep(1200);await line(main,{type:'user',uuid:'u-pane',message:{content:'synthetic'}});await peer('busy');
+    await film('pane-assign',14000);assert(kinds('pane-assign').has('collab.assign'),'typing into the Claude pane is an assignment');
+    await line(main,{type:'assistant',message:{stop_reason:'end_turn',content:[{type:'text',text:'done'}]}});await line(main,{type:'system',subtype:'turn_duration'});await peer('idle');
+    await film('pane-deliver',13000);assert(kinds('pane-deliver').has('collab.deliver'),'the end of that Claude turn is the hand-back');
+    harness(as('claude','claude.exe'),as('codex','codex.exe'),'queue','--thread',thread,'--message','synthetic');
+    await sleep(1200);await record(desktop,event('task_started',{turn_id:'qa-queued'}));
+    await film('queue-assign',14000);assert(kinds('queue-assign').has('collab.assign'),'a queued message is an assignment once the desktop session takes it up');
+    await record(desktop,event('task_complete',{turn_id:'qa-queued'}));
+    await film('queue-deliver',13000);assert(kinds('queue-deliver').has('collab.deliver'));
+    harness(as('OpenAI.Codex','ChatGPT.exe'),as('herdr','herdr.exe'),'agent','send-keys','wD:p9','synthetic','text');
+    await film('keys-typing',9000);assert(!kinds('keys-typing').has('collab.assign'),'text still waiting for Enter is not a task');
+    // The stand-in Herdr reports this Claude session for its pane, so Enter is a task when that session starts a turn.
+    harness(as('OpenAI.Codex','ChatGPT.exe'),as('herdr','herdr.exe'),'agent','send-keys','wD:p9','Enter');
+    await sleep(1200);await line(main,{type:'user',uuid:'u-keys',message:{content:'synthetic'}});await peer('busy');
+    await film('keys-assign',14000);assert(kinds('keys-assign').has('collab.assign'),'Enter that starts a turn of the pane agent is an assignment');
+    await line(main,{type:'assistant',message:{stop_reason:'end_turn',content:[{type:'text',text:'done'}]}});await line(main,{type:'system',subtype:'turn_duration'});await peer('idle');
+    await film('keys-deliver',13000);assert(kinds('keys-deliver').has('collab.deliver'),'the end of that turn is the hand-back');
+    checks.push('pane-text-handover','codex-queue-handover','herdr-keys-handover','typing-without-enter-ignored');
   } else {
     await record('cli.jsonl',{type:'session_meta',payload:{id:'qa-cli',source:'cli',originator:'codex-tui'}});
     await record('desktop.jsonl',{type:'session_meta',payload:{id:'qa-desktop',source:'vscode',originator:'Codex Desktop'}});

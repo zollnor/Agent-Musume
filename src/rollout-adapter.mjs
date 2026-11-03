@@ -8,9 +8,11 @@ const ITEM_TOOLS = new Set(['CommandExecution','McpToolCall','FileChange','WebSe
 
 /** Discards all content/arguments/output. Only structured lifecycle metadata crosses this boundary. */
 export class RolloutAdapter {
-  constructor({emit,now=Date.now,onChange=()=>{},sourceKind='chatgpt-desktop'}={}) {
+  // onTurn({source,file,phase:'start'|'end',outcome}) reports each live turn of a session: which session a hand-over
+  // through an already open agent went to, and when that agent answered (session-turns.mjs).
+  constructor({emit,now=Date.now,onChange=()=>{},onTurn=()=>{},sourceKind='chatgpt-desktop'}={}) {
     this.sourceKind=sourceKind;
-    this.emit=emit??(()=>{}); this.now=now; this.onChange=onChange;
+    this.emit=emit??(()=>{}); this.now=now; this.onChange=onChange; this.onTurn=onTurn;
     this.sessions=new Map(); this.counter=0; this.lastTerminal=null; this.lastEventAt=null; this.acceptedEvents=0;
   }
   session(file) {
@@ -38,6 +40,7 @@ export class RolloutAdapter {
         const turn=String(p.turn_id??p.root_turn_id??'');
         if(!turn||s.ended.has(turn)||(s.active&&s.turn===turn)) return;
         s.turn=turn;s.active=true;s.waiting=false;s.waitingCall=null;s.asyncQuestion=false;s.published=null;
+        if(!replay)this.onTurn({source:this.sourceKind,file,phase:'start'});
         this.set(s,'thinking',replay);return;
       }
       if(['task_complete','task_failed','task_error','error','turn_aborted','task_cancelled'].includes(kind)) {
@@ -48,6 +51,7 @@ export class RolloutAdapter {
         if(s.ended.size>64) s.ended.delete(s.ended.values().next().value);
         const terminal=kind==='task_complete'?'success':['turn_aborted','task_cancelled'].includes(kind)?'idle':'error';
         s.state=terminal;s.at=++this.counter;
+        if(!replay)this.onTurn({source:this.sourceKind,file,phase:'end',outcome:terminal});
         if(!replay) {
           const other=[...this.sessions.values()].some(x=>x!==s&&x.eligible&&x.active);
           this.send(s,'todo/write',{todos:[]});

@@ -18,6 +18,10 @@ import { requestGate,stripWildcardCors } from './request-gate.mjs';
 import { PANEL } from './panel.mjs';
 import {LiveWriterEvidence,SessionSourceRouter} from './session-source-router.mjs';
 import {CollabTracker} from './collab-tracker.mjs';
+import {HandoffTracker} from './handoffs.mjs';
+import {HarnessMonitor} from './harness-monitor.mjs';
+import {SessionTurns} from './session-turns.mjs';
+import {installHandoffSkill} from './handoff-install.mjs';
 
 const APP_VERSION=JSON.parse(readFileSync(join(APP_ROOT,'package.json'),'utf8')).version;
 const data=process.env.AGENT_MUSUME_DATA??join(APP_ROOT,'data');
@@ -62,11 +66,15 @@ process.env.AGENT_MUSUME_BRIDGE_CAPABILITY=randomBytes(32).toString('base64url')
 const bus=new EventEmitter();
 globalThis[Symbol.for('agent-musume.events')]=bus;
 let demo=null,demoTimer,watcher,claudeMonitor,dshMonitor,sourceEvidence,sourceTimer,sourceRefreshBusy=false,stopping=false,sourcesReady=false,serverPort=0,captureSerial=Date.now();
-const adapter=new RolloutAdapter({emit:(...args)=>{if(!demo)bus.emit(...args);}});
-const codexCli=new RolloutAdapter({sourceKind:'codex-cli'});
-const claudeCli=new ClaudeAdapter();
-const dsh=new DshAdapter();
+// Live session turns, for hand-overs to an agent already open (a terminal pane, a Codex queue).
+const turns=new SessionTurns(),onTurn=turn=>turns.record(turn);
+const adapter=new RolloutAdapter({emit:(...args)=>{if(!demo)bus.emit(...args);},onTurn});
+const codexCli=new RolloutAdapter({sourceKind:'codex-cli',onTurn});
+const claudeCli=new ClaudeAdapter({onTurn});
+const dsh=new DshAdapter({onTurn});
 const collab=new CollabTracker();
+const handoffs=new HandoffTracker({collab});
+const harnessMonitor=new HarnessMonitor({tracker:handoffs,turns,data,onChange:()=>notifyReactions()});
 const sourceStates=()=>({'chatgpt-desktop':adapter.status(),'codex-cli':codexCli.status(),'claude-code':claudeCli.status(),'dsh-desktop':dsh.status()});
 const emitDemo=(type,fields={})=>bus.emit('session/event',{id:'manual-preview',header:{id:'manual-preview'}},{type,seq:Date.now(),data:fields});
 const json=(res,status,obj)=>{res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store'});res.end(JSON.stringify(obj));};
@@ -80,7 +88,7 @@ function notifyReactions(){
   setImmediate(()=>{notifyQueued=false;const before=reactionRev,next=reactions();if(next.rev!==before)for(const answer of [...reactionWaiters])answer(next);});
 }
 setInterval(notifyReactions,1000).unref(); // terminal states and helper results expire with time, not with a record
-const snapshot=()=>({application:'agent-musume',version:APP_VERSION,...adapter.status(),mode:demo?'demo':'live',demoLabel:demo?.label??null,watcher:watcher?.status()??{running:false,sourceAvailable:false},dsh:dshMonitor?.status()??{running:false,sourceAvailable:false},sourceRouting:sourceEvidence?.status()??{available:false},sourcesReady,sources:sourceStates(),claudeWatcher:claudeMonitor?.status()??{running:false,sourceAvailable:false}});
+const snapshot=()=>({application:'agent-musume',version:APP_VERSION,...adapter.status(),mode:demo?'demo':'live',demoLabel:demo?.label??null,watcher:watcher?.status()??{running:false,sourceAvailable:false},dsh:dshMonitor?.status()??{running:false,sourceAvailable:false},sourceRouting:sourceEvidence?.status()??{available:false},sourcesReady,sources:sourceStates(),claudeWatcher:claudeMonitor?.status()??{running:false,sourceAvailable:false},handoffs:handoffs.status(),harnessWatcher:harnessMonitor.status()});
 function endDemo() {
   if(!demo)return;clearTimeout(demoTimer);demo=null;
   emitDemo('turn/end',{reason:{kind:'aborted'}});adapter.republish();notifyReactions();
@@ -98,7 +106,7 @@ function preview(state) {
   demoTimer=setTimeout(endDemo,12000);notifyReactions();return true;
 }
 async function stop() {
-  if(stopping)return;stopping=true;clearTimeout(demoTimer);clearInterval(sourceTimer);sourceEvidence?.close();
+  if(stopping)return;stopping=true;clearTimeout(demoTimer);clearInterval(sourceTimer);sourceEvidence?.close();harnessMonitor.close();
   await watcher?.close();
   await claudeMonitor?.close();
   await dshMonitor?.close();
@@ -124,7 +132,12 @@ async function controls(req,res,path) {
   if(!path.startsWith('/control/'))return false;
   if(req.method!=='POST'){json(res,405,{error:'方法不支持'});return true;}
   const input=await body(req,res);if(input===null)return true;
-  if(path==='/control/stop'){json(res,200,{ok:true});setImmediate(()=>void stop());}
+  if(path==='/control/handoff'){const result=handoffs.consume(input);json(res,result.ok?200:400,result);notifyReactions();}
+  else if(path==='/control/install-handoff-skill'){
+    try{json(res,200,await installHandoffSkill({roots:[join(process.env.CODEX_HOME??join(homedir(),'.codex'),'skills'),join(process.env.CLAUDE_CONFIG_DIR??join(homedir(),'.claude'),'skills'),join(dshHome,'skills')]}));}
+    catch{json(res,409,{ok:false,error:'已有同名文件或技能目录不可写，未覆盖。'});}
+  }
+  else if(path==='/control/stop'){json(res,200,{ok:true});setImmediate(()=>void stop());}
   else if(path==='/control/preview'){json(res,preview(input.state)?200:400,{ok:!!demo});}
   else if(path==='/control/live'){endDemo();json(res,200,{ok:true});}
   else if(path==='/control/capture') {
@@ -153,12 +166,12 @@ globalThis[Symbol.for('agent-musume.host')]={createServer(handler) {
       claudeMonitor=new ClaudeMonitor({root:process.env.AGENT_MUSUME_CLAUDE_HOME??process.env.CLAUDE_CONFIG_DIR??join(homedir(),'.claude'),adapter:claudeCli,collab,onChange:notifyReactions});
       // DeepSeek Harness desktop: its own session records, followed like the others (the original fish's source).
       dshMonitor=new DshMonitor({root:dshHome,adapter:dsh,onChange:notifyReactions});
-      await Promise.all([watcher.start(),claudeMonitor.start(),dshMonitor.start()]);sourcesReady=true;console.log('桌面、Codex CLI、Claude Code CLI 与 DeepSeek Harness 本地会话监听已启动。');
+      await Promise.all([watcher.start(),claudeMonitor.start(),dshMonitor.start()]);harnessMonitor.start();sourcesReady=true;console.log('桌面、Codex CLI、Claude Code CLI 与 DeepSeek Harness 本地会话和跨工具交接监听已启动。');
     },350);
   });
   return server;
 }};
-process.on('SIGTERM',()=>{stopping=true;clearTimeout(demoTimer);clearInterval(sourceTimer);sourceEvidence?.close();void watcher?.close();void claudeMonitor?.close();void dshMonitor?.close();});
+process.on('SIGTERM',()=>{stopping=true;clearTimeout(demoTimer);clearInterval(sourceTimer);sourceEvidence?.close();harnessMonitor.close();void watcher?.close();void claudeMonitor?.close();void dshMonitor?.close();});
 process.on('SIGINT',()=>void stop());
 process.argv=[process.execPath,join(vendor,'lib','standalone.patched.mjs'),'--port','31471'];
 await import(pathToFileURL(join(vendor,'lib','standalone.patched.mjs')).href);

@@ -1,5 +1,5 @@
 'use strict';
-const {Tray,Menu,nativeImage,shell,ipcMain}=require('electron');
+const {Tray,Menu,nativeImage,shell,ipcMain,dialog}=require('electron');
 const {readFileSync,writeFileSync,mkdirSync}=require('node:fs');
 const {join}=require('node:path');
 
@@ -51,7 +51,8 @@ module.exports=({app,BrowserWindow,windows,petStates})=>{
   const request=async(action,body={})=>{
     try {
       const runtime=JSON.parse(readFileSync(join(data,'runtime.json'),'utf8'));
-      await fetch(`http://127.0.0.1:${runtime.port}/control/${action}`,{method:'POST',headers:{'content-type':'application/json','x-deskpet-capability':runtime.capability},body:JSON.stringify(body)});
+      const response=await fetch(`http://127.0.0.1:${runtime.port}/control/${action}`,{method:'POST',headers:{'content-type':'application/json','x-deskpet-capability':runtime.capability},body:JSON.stringify(body)});
+      return await response.json();
     }catch { /* Host may already be shutting down. Never log capability-bearing requests. */ }
   };
   let tray;
@@ -67,6 +68,10 @@ module.exports=({app,BrowserWindow,windows,petStates})=>{
       {type:'separator'},
       item('设置…',()=>settings.open()),
       item('运行状态（在浏览器中打开）',()=>shell.openExternal(process.env.AGENT_MUSUME_PANEL_URL)),
+      item('接入跨工具联动…',async()=>{
+        const result=await request('install-handoff-skill');
+        await dialog.showMessageBox({type:result?.ok?'info':'warning',message:result?.ok?'跨工具联动已接入':'暂未完成接入',detail:result?.ok?'请在 ChatGPT/Codex、Claude Code、DSH 中新建会话或重新加载技能，已有窗口的任务交接即可联动。':result?.error??'请确认桌宠仍在运行后重试。'});
+      }),
       {type:'separator'},
       item('显示全部宠物',()=>petWindows().forEach(w=>w.showInactive())),
       item('隐藏全部宠物',()=>petWindows().forEach(w=>w.hide())),

@@ -16,7 +16,7 @@ export class LiveWriterEvidence{
   async refresh(){
     if(this.closed)return;
     try{
-      const script=`$all=Get-CimInstance Win32_Process; $rows=@(); foreach($p in $all){if($p.Name -ine 'codex.exe'){continue};$parent=$all|Where-Object {$_.ProcessId -eq $p.ParentProcessId}|Select-Object -First 1;$kind=$null;if($p.CommandLine -match '(?:^|\\s)app-server(?:\\s|$)' -and $parent.Name -ieq 'ChatGPT.exe' -and $parent.ExecutablePath -match 'OpenAI[.\\\\/]Codex'){$kind='chatgpt-desktop'}elseif($p.CommandLine -notmatch '(?:^|\\s)(?:app-server|exec-server)(?:\\s|$)'){$kind='codex-cli'};if($kind){$rows+=@{pid=[int]$p.ProcessId;kind=$kind;startedAt=([DateTimeOffset]$p.CreationDate).ToUnixTimeMilliseconds()}}};ConvertTo-Json -InputObject @($rows) -Compress`;
+      const script=`$all=Get-CimInstance Win32_Process; $rows=@(); foreach($p in $all){if($p.Name -ine 'codex.exe'){continue};$parent=$all|Where-Object {$_.ProcessId -eq $p.ParentProcessId}|Select-Object -First 1;$kind=$null;if($p.CommandLine -match '(?:^|\\s)app-server(?:\\s|$)' -and $parent.Name -ieq 'ChatGPT.exe' -and $parent.ExecutablePath -match 'OpenAI'){$kind='chatgpt-desktop'}elseif($p.CommandLine -notmatch '(?:^|\\s)(?:app-server|exec-server)(?:\\s|$)'){$kind='codex-cli'};if($kind){$rows+=@{pid=[int]$p.ProcessId;kind=$kind;startedAt=([DateTimeOffset]$p.CreationDate).ToUnixTimeMilliseconds()}}};ConvertTo-Json -InputObject @($rows) -Compress`;
       const {stdout}=await run('powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,timeout:6000,maxBuffer:256*1024});
       if(this.closed)return;
       this.processes=JSON.parse(stdout.trim()||'[]');if(!Array.isArray(this.processes))this.processes=[this.processes];

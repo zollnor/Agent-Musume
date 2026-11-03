@@ -1,6 +1,7 @@
 node_modules/
 data/
 release/
+outputs/
 *.log
 
 # Local credentials and signing material.

@@ -4,13 +4,13 @@
 
 AgentMusume 是一款与 AI Agent 会话联动的 AI 娘桌宠。三位角色可分别跟随 ChatGPT/Codex、Claude Code 和 DeepSeek Harness 的本地会话，随思考、工具执行、等待确认和一轮完成等状态作出相应反应；当 Agent 之间派发子任务、交回结果或协作完成时，还会以桌宠间的互动动画呈现，让工作状态与协作过程直观地展现在桌面上。
 
-[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
+[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.2/Agent-Musume-Setup-0.1.2.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
 
 Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 ## 动画演示
 
-**v0.1.1 更新**：新增龙娘与大肥鱼之间双向派发任务、交回结果、共同庆祝与失败安慰，共 8 种互动。
+**v0.1.2 更新**：加强跨工具任务交接识别，覆盖新启动的 CLI、Herdr 派发、终端传话和 Codex 会话排队，让派发、回传与失败对应到桌宠互动。详见[跨工具派任务](#跨工具派任务)。
 
 ### 三位角色，三种陪伴
 
@@ -30,7 +30,7 @@ Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 GIF 展示程序内置动作与互动演出。真实联动的触发条件与一轮完成的含义，见[宠物互动](#宠物互动)。
 
 - **跟着 AI 工作**：读取本机 ChatGPT 桌面版、Codex CLI、Claude Code、DeepSeek Harness 的会话状态，呈现思考、执行工具、等待确认、完成和出错。
-- **把协作演出来**：主宠物与助手分别对应会话和子代理；三位角色两两之间都有专用双人动画，支持双向互动。
+- **把协作演出来**：主宠物与助手对应会话、子代理或跨工具接收方；三位角色两两之间都有专用双人动画，支持双向互动。
 - **平时也有小动作**：拖动、抛接、点击回应、随机走动和闲聊，可暂停走动或安静 30 分钟。
 - **本机运行**：不额外调用模型，不需要 API Key；没有兼容的 AI 工具也能看日常动作，或从托盘菜单演示互动。
 
@@ -46,15 +46,15 @@ GIF 展示程序内置动作与互动演出。真实联动的触发条件与一�
 
 ### 安装包（推荐）
 
-1. [下载 v0.1.1 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/Agent-Musume-Setup-0.1.1.exe)（355,381,127 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
+1. [下载 v0.1.2 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.2/Agent-Musume-Setup-0.1.2.exe)（355,398,828 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
 2. 双击安装，完成后程序自动启动，桌面右下角出现三只宠物。
 3. 右键宠物打开设置；从托盘菜单选择“演示宠物互动”，可以先看联动效果。
 
 不需要管理员权限，也不需要 Node.js，装好后会自动启动，桌面和开始菜单都有快捷方式。
 
-安装包目前没有代码签名，Windows 可能提示“Windows 已保护你的电脑”。请先确认下载自本仓库的 Release，并按需要比对 [SHA256SUMS.txt](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.1/SHA256SUMS.txt)；确认来源后，可在提示中选择“更多信息”→“仍要运行”。
+安装包目前没有代码签名，Windows 可能提示“Windows 已保护你的电脑”。请先确认下载自本仓库的 Release，并按需要比对 [SHA256SUMS.txt](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.2/SHA256SUMS.txt)；确认来源后，可在提示中选择“更多信息”→“仍要运行”。
 
-> v0.1.1 补充了龙娘与大肥鱼的 8 种双向互动。测试与安装包核对见 [发布核对记录](docs/release-validation-v0.1.1.md)。另一台干净 Windows 电脑上的安装、升级和卸载全流程，尚无本次实测记录。
+> v0.1.2 加强跨工具交接识别，并提供可选的交接 Skill 接入。测试与安装包核对见 [发布核对记录](docs/release-validation-v0.1.2.md)。另一台干净 Windows 电脑上的安装、升级和卸载全流程，尚无本次实测记录。
 
 卸载：在 Windows 的“设置 > 应用 > 已安装的应用”里卸载。配置保留在 `%APPDATA%\Agent-Musume`，不需要的话可以手动删除。
 
@@ -87,9 +87,9 @@ npm ci
 
 | 宠物 | 跟随的会话 | 接手这些来源的子代理 |
 | --- | --- | --- |
-| 大小姐 | Claude Code | ChatGPT 桌面版、Codex CLI、DeepSeek Harness |
-| 龙娘 | ChatGPT 桌面版、Codex CLI | Claude Code |
-| 大肥鱼 | DeepSeek Harness | Claude Code |
+| 大小姐 | Claude Code | Claude Code、ChatGPT 桌面版、Codex CLI、DeepSeek Harness |
+| 龙娘 | ChatGPT 桌面版、Codex CLI | ChatGPT 桌面版、Codex CLI、Claude Code |
+| 大肥鱼 | DeepSeek Harness | DeepSeek Harness、Claude Code |
 
 这些都可以在设置里改。之后这样用：
 
@@ -149,11 +149,32 @@ npm ci
 - `~/.claude/sessions`，以及仍在运行的 Claude Code 对应的 `~/.claude/projects` 记录
 - `~/.dsh/sessions`
 
-它还会查询 `codex.exe` 进程，判断记录来自哪个客户端。
+它还会查询本机进程的程序类型、父子关系和启动/退出时间，判断记录来自哪个客户端，以及是否实际启动了另一种 harness。进程列表只含进程号、父进程号、启动顺序和程序名；只有新出现的 claude、codex、node、herdr、WezTerm、ChatGPT、DSH 进程，会在本机读一次命令行来分类（herdr 的提示词只看是否以 `/` 开头，打字和排队的内容不看），不保存命令行、提示词或参数，也不读取进程的环境变量和内存。
 
-它不保存提示词、工具参数和输出、回复正文或会话标识，不读取屏幕、键盘和登录凭证，也不修改这些工具的配置。
+它不保存提示词、工具参数和输出、回复正文或会话标识，不读取屏幕、键盘和登录凭证。可选安装的交接 Skill 只写入自己的技能目录，不修改各工具的配置或权限。
 
 配置和运行信息在 `%APPDATA%\Agent-Musume` 文件夹里（从源码运行时在项目的 `data` 文件夹）。里面有仅供本机控制的令牌，**不要把整个文件夹发给别人**。本地 HTTP 服务只监听 `127.0.0.1`，写操作需要校验令牌。
+
+## 跨工具派任务
+
+ChatGPT 桌面版、Codex CLI、Claude Code 和 DSH 可以互相派任务。新启动的一次性任务（`claude -p`、`codex exec`）由本机父子进程关系识别，派发方等它跑完，或在后台启动（PowerShell 的 Start-Process、`cmd /c start`、分离的子进程）都可以：监视器每秒约五十次记录进程的父子关系，已退出的启动者保留两分钟，任务仍能追回派发方。两个工具独立运行不会因此被判为协作。桌宠启动前已经存在的进程只作基线，不补演历史交接。不到一秒就结束的任务可能赶不上记录，使用下面的交接入口可完整记录。
+
+把任务交给已经打开的 agent，以下几种方式也会自动识别，派发方都由进程关系确定：
+
+- [Herdr](https://herdr.dev) 的 `herdr agent prompt <窗格> <内容>`：接收方是该窗格里的 agent（向 Herdr 查询，只取 agent 类型、状态和会话号）。该 agent 做完、回到空闲即算交回，提示词没被接受算失败。以 `/` 开头的内容（如 `/model`、`/effort`）是给 agent 的命令，不算任务。
+- Herdr 的 `herdr agent send-keys`：按键让该窗格的会话开始新的一轮才算派任务，那一轮结束算交回。批准权限、Esc、方向键、还没按回车的文字都不算。
+- WezTerm 的 `cli send-text`（按程序信息识别，改了文件名的 WezTerm 也算）：随后几秒内，另一种工具的 Claude Code 或 Codex CLI 会话开始新的一轮，就是接收方；那一轮结束算交回。
+- `codex queue --thread <会话> --message <内容>`：给 ChatGPT 桌面版或 Codex CLI 的已有会话排队派任务。该会话开始处理这条消息时算派任务，这一轮结束算交回。
+
+向其他已经打开的终端或桌面会话派任务时，进程关系不会改变，需要由派发方上报交接元数据。托盘菜单选择“接入跨工具联动…”即可安装配套 Skill；从源码也可运行 `node src/handoff.mjs install`。它为本机 ChatGPT/Codex、Claude Code、DSH 写入 `agent-musume-handoff` 技能，新会话会发现该技能。它不会调用任何模型，也不修改 AGENTS.md 或其他配置；使用自定义配置目录时沿用对应环境变量。
+
+统一入口为 `node src/handoff.mjs`：
+
+- `run --from chatgpt-desktop --to claude-code --command claude.exe -p ...`：包装 Claude Code / Codex CLI 的一次性调用，确认启动后派发、按真实退出码回传；保留标准输入输出。桌宠离线时仍执行实际任务。交互终端、桌面程序、后台启动器及 DSH 会话用下面的显式事件，不能把启动器正常退出当作任务完成。
+- `started --from claude-code --to chatgpt-desktop`：目标确认接受任务后上报，返回随机任务 id。
+- `delivered --from claude-code --to chatgpt-desktop --id 原id`：结果实际交还后上报；失败用 `failed`，取消或未知结果用 `cancelled`。
+
+来源编号还包括 `codex-cli` 与 `dsh-desktop`，四类之间的 12 个方向使用同一接口。桌宠优先按来源和目标选择对应角色；若两个来源共用一只宠物，或没有单独设置主角色，则由允许协助该来源的另一只宠物代演。至少需要两只可见且开启协作的匹配桌宠。任务标识、来源、目标、状态之外的字段会被拒绝，写接口继续校验本机令牌。任意第三方 harness 可经同样的事件桥接扩展；未接入的网页、远程或 GUI 调度不能靠同时忙碌可靠推断。
 
 ## 范围和限制
 
@@ -184,7 +205,8 @@ npm run package   # 生成 release/ 下的安装包
 
 | 脚本 | 内容 | 影响 |
 | --- | --- | --- |
-| `interaction-verification.mjs <场景>` | 互动演出，场景有 `delegation`、`claude`、`social`、`fish`、`lf`、`df` | 独立数据目录，不影响正在运行的桌宠 |
+| `interaction-verification.mjs <场景>` | 互动演出，场景有 `delegation`、`claude`、`social`、`fish`、`lf`、`df`、`relay`（`relay` 需 Windows 自带的 .NET Framework 编译本地测试进程） | 独立数据目录，不影响正在运行的桌宠 |
+| `handoff-verification.mjs` | 本机事件桥、Skill 入口及跨工具派发、回传、失败的真实桌宠演出；可使用 `AGENT_MUSUME_QA_EXE` 验证打包版 | 独立配置目录，仅使用本地测试事件，不调用模型 |
 | `appearance-verification.mjs` | 形象选择和切换 | 独立数据目录 |
 | `source-verification.mjs` | 来源隔离和优先级 | 需要已有配置，结束时恢复 |
 | `settings-verification.mjs` | 设置窗口全流程 | 会重启桌宠 |

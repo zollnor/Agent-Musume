@@ -171,11 +171,11 @@ export class CollabTracker {
     const c=this.children.get(childKey);if(!c)return;
     c.active=false;c.ended=true;c.state=terminal;c.at=++this.seq;c.terminalAt=replay?at:this.now();
   }
-  emit(kind,source,id,at,replay) {
+  emit(kind,source,id,at,replay,route={}) {
     if(this.emitted.has(id))return;
     this.emitted.add(id);if(this.emitted.size>1024)this.emitted.delete(this.emitted.values().next().value);
     if(replay)return; // History only builds state; it never replays a performance.
-    this.events.push({id,kind,source,at:this.now(),occurredAt:at,seq:++this.seq});
+    this.events.push({id,kind,source,...route,at:this.now(),occurredAt:at,seq:++this.seq});
     if(this.events.length>MAX_EVENTS)this.events.splice(0,this.events.length-MAX_EVENTS);
   }
   reset(file) {

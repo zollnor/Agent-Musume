@@ -15,6 +15,8 @@ test('a first start shows all three pets, each following its own sessions',()=>{
   assert.deepEqual(byLook('claude-lady').reactionSources,['claude-code']);
   assert.deepEqual(byLook('dragon-girl-D').reactionSources,['chatgpt-desktop','codex-cli']);
   assert.deepEqual(byLook('blue-fish').reactionSources,['dsh-desktop']);
+  // Each pet also takes its own tool's sub-agents (user, 2026-11-03), besides the cross help that keeps the duets.
+  for(const p of DEFAULT_CONFIG.pets)for(const source of p.reactionSources)assert(p.interaction.helperSources.includes(source),`${p.name} takes ${source} sub-agents`);
   assert(DEFAULT_CONFIG.pets.every(p=>p.display==='desktop'&&p.workStatusEnabled&&!p.fixedEnabled));
   assert.deepEqual(DEFAULT_CONFIG.pets.flatMap(p=>p.reactionSources).sort(),Object.keys(SOURCE_LABELS).sort(),'every source has a pet');
   assert.equal(new Set(DEFAULT_CONFIG.pets.map(p=>p.id)).size,3);
@@ -33,6 +35,7 @@ test('every interaction is on and every source has a helper with a paired take',
     const look=id=>DEFAULT_CONFIG.pets.find(p=>p.id===id).appearance;
     assert(I.duetCast('collab.assign',look(pair.main),look(pair.helper)),`${source}: the assignment is a paired take`);
     assert(I.duetCast('collab.deliver',look(pair.helper),look(pair.main)),`${source}: the delivery is a paired take`);
+    for(const target of Object.keys(SOURCE_LABELS))if(target!==source)assert(d.pairFor(source,target),`${source} > ${target} has two pets`);
   }
 });
 

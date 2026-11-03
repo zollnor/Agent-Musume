@@ -18,7 +18,7 @@ class Director {
   constructor({send,now=Date.now,random=Math.random,boxes=()=>({}),visible=()=>true,display=()=>0,log=()=>{}}={}) {
     this.send=send;this.now=now;this.random=random;this.boxes=boxes;this.visible=visible;this.display=display;this.log=log;
     this.profiles=new Map();this.live=new Map();this.show=null;this.queue=[];this.cool=new Map();this.serial=0;
-    this.lastEnd=0;this.collabSeq=null;this.delivered=new Map();this.nextChat=now()+120000+random()*120000;
+    this.lastEnd=0;this.collabSeq=null;this.delivered=new Map();this.taskPairs=new Map();this.nextChat=now()+120000+random()*120000;
   }
   // ---------- inputs ----------
   hello(id,profile) {
@@ -61,9 +61,15 @@ class Director {
       this.collabSeq=e.seq;
       if(this.now()-(Number(e.at)||0)>EVENT_TTL_MS)continue;
       const kind={'task.assigned':'collab.assign','result.delivered':'collab.deliver','task.failed':'collab.failed'}[e.kind];
-      const pair=kind&&this.pairFor(e.source);if(!pair)continue;
-      if(kind==='collab.deliver')this.delivered.set(e.source,this.now());
-      this.enqueue({kind,members:kind==='collab.deliver'?[pair.helper,pair.main]:[pair.main,pair.helper],source:e.source});
+      // The hand-back of a cross-harness task goes to the pets that staged its assignment, wherever they stand now.
+      const kept=e.task&&kind!=='collab.assign'?this.taskPairs.get(e.task):null;
+      if(kept)this.taskPairs.delete(e.task);
+      const usable=kept&&[kept.main,kept.helper].every(id=>this.profiles.get(id)?.interaction.collab&&this.visible(id));
+      const pair=kind&&(usable?kept:this.pairFor(e.source,e.target));
+      if(pair&&e.task&&kind==='collab.assign'){this.taskPairs.set(e.task,{main:pair.main,helper:pair.helper});if(this.taskPairs.size>64)this.taskPairs.delete(this.taskPairs.keys().next().value);}
+      if(!pair){this.log(`skip ${kind??'unknown'} no-pair ${e.source}>${e.target??'helper'} profiles=${this.profiles.size} boxes=${Object.keys(this.boxes()).join(',')}`);continue;}
+      if(kind==='collab.deliver')this.delivered.set(e.source,{at:this.now(),pair});
+      this.enqueue({kind,members:kind==='collab.deliver'?[pair.helper,pair.main]:[pair.main,pair.helper],source:e.source,handoff:e.task??null});
     }
     this.pump();
   }
@@ -107,8 +113,8 @@ class Director {
   onState(id,state,source) {
     if(!source||source==='demo'||source.startsWith('helper:'))return;
     if(state==='success') {
-      const helper=this.helperFor(source,id),since=this.delivered.get(source);
-      if(helper&&since&&this.now()-since<TEAM_WINDOW_MS){this.delivered.delete(source);this.enqueue({kind:'collab.complete',members:[id,helper],source});return;}
+      const delivered=this.delivered.get(source),helper=delivered?.pair.main===id?delivered.pair.helper:null;
+      if(helper&&this.profiles.has(helper)&&this.now()-delivered.at<TEAM_WINDOW_MS){this.delivered.delete(source);this.enqueue({kind:'collab.complete',members:[id,helper],source});return;}
     }
     const kind={success:'social.cheer',error:'social.comfort',waiting:'social.nudge'}[state];
     if(!kind)return;
@@ -118,11 +124,17 @@ class Director {
     const reactor=this.nearest(id,p=>p.interaction.social&&!URGENT.has(this.live.get(p.id).state)&&this.live.get(p.id).source!==source&&!(this.cool.get(`${kind}:${id}:${p.id}`)>this.now()));
     if(reactor)this.enqueue({kind,members:[reactor],target:id});
   }
-  pairFor(source) {
-    const mains=[...this.profiles.values()].filter(p=>p.interaction.collab&&p.reactionSources.includes(source)&&this.visible(p.id));
-    const helpers=[...this.profiles.values()].filter(p=>p.interaction.collab&&p.interaction.helperSources.includes(source)&&this.visible(p.id));
+  pairFor(source,target=null) {
+    const eligible=[...this.profiles.values()].filter(p=>p.interaction.collab&&this.visible(p.id));
+    let mains=eligible.filter(p=>p.reactionSources.includes(source));
+    if(target&&!mains.length)mains=eligible.filter(p=>p.interaction.helperSources.includes(source));
+    const shared=target&&mains.some(p=>p.reactionSources.includes(target));
+    const helpers=eligible.filter(p=>target?(p.reactionSources.includes(target)||p.interaction.helperSources.includes(target)||shared&&p.interaction.helperSources.includes(source)):p.interaction.helperSources.includes(source));
     let best=null;
-    for(const m of mains)for(const h of helpers)if(m.id!==h.id){const d=this.distance(m.id,h.id);if(!best||d<best.d)best={main:m.id,helper:h.id,d};}
+    for(const m of mains)for(const h of helpers)if(m.id!==h.id){
+      const d=this.distance(m.id,h.id),rank=target&&!h.reactionSources.includes(target)?1:0;
+      if(Number.isFinite(d)&&(!best||rank<best.rank||rank===best.rank&&d<best.d))best={main:m.id,helper:h.id,d,rank};
+    }
     return best;
   }
   helperFor(source,main) {return this.pairFor(source)?.main===main?this.pairFor(source).helper:null;}
@@ -134,8 +146,8 @@ class Director {
   // ---------- queue ----------
   enqueue(c) {
     c={...c,createdAt:this.now(),priority:PRIORITY[c.kind]??0,count:c.count??1};
-    if(c.kind==='collab.deliver')this.queue=this.queue.filter(q=>!(q.kind==='collab.assign'&&q.source===c.source));
-    const same=this.queue.find(q=>q.kind===c.kind&&q.source===c.source&&c.kind.startsWith('collab.')&&q.members.join()===c.members.join());
+    if(c.kind==='collab.deliver')this.queue=this.queue.filter(q=>!(q.kind==='collab.assign'&&q.source===c.source&&(c.handoff?q.handoff===c.handoff:!q.handoff)));
+    const same=this.queue.find(q=>q.kind===c.kind&&q.source===c.source&&q.handoff===c.handoff&&c.kind.startsWith('collab.')&&q.members.join()===c.members.join());
     if(same){same.count++;return;}
     this.queue.push(c);
   }

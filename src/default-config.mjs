@@ -9,9 +9,10 @@ const pet=(id,name,appearance,reactionSources,helperSources)=>({
 
 export const DEFAULT_CONFIG=Object.freeze({
   pets:[
-    pet('main','大小姐','claude-lady',['claude-code'],['chatgpt-desktop','codex-cli','dsh-desktop']),
-    pet('pet-2','龙娘','dragon-girl-D',['chatgpt-desktop','codex-cli'],['claude-code']),
-    pet('pet-3','大肥鱼','blue-fish',['dsh-desktop'],['claude-code'])
+    // Each pet takes its own tool's sub-agents, and the others' too, so a sub-agent and a hand-over always have two pets.
+    pet('main','大小姐','claude-lady',['claude-code'],['claude-code','chatgpt-desktop','codex-cli','dsh-desktop']),
+    pet('pet-2','龙娘','dragon-girl-D',['chatgpt-desktop','codex-cli'],['chatgpt-desktop','codex-cli','claude-code']),
+    pet('pet-3','大肥鱼','blue-fish',['dsh-desktop'],['dsh-desktop','claude-code'])
   ],
   notificationsEnabled:false,
   workStatusTexts:[['正在思考下一步'],['正在执行工具'],['正在整理工具结果'],['需要你输入或确认'],['这一轮回复已结束'],['本轮运行遇到错误']]

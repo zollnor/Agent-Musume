@@ -1,0 +1,83 @@
+import {readFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {homedir} from 'node:os';
+
+/** Live turns of the watched sessions, as the adapters report them ({source, file, phase, outcome}), kept 30 s. */
+export class SessionTurns {
+  constructor({now=Date.now}={}){this.now=now;this.recent=[];this.waiters=new Set();}
+  record({source,file,phase,outcome=null}){
+    const turn={source,file,phase,outcome,at:this.now()};
+    this.recent=this.recent.filter(t=>turn.at-t.at<30000);this.recent.push(turn);
+    for(const waiter of [...this.waiters])waiter(turn);
+  }
+  /** The first turn matching `accept` from `since` on, waiting up to `within` ms; null when none comes or on cancel(). */
+  next(accept,{since=this.now(),within}){
+    const seen=this.recent.find(t=>t.at>=since&&accept(t));
+    if(seen)return Object.assign(Promise.resolve(seen),{cancel(){}});
+    let done;
+    const waiting=new Promise(resolve=>{
+      const waiter=turn=>{if(accept(turn))done(turn);};
+      const timer=setTimeout(()=>done(null),within);if(within>60000)timer.unref?.(); // a long wait never keeps the host up
+      done=turn=>{this.waiters.delete(waiter);clearTimeout(timer);resolve(turn);};
+      this.waiters.add(waiter);
+    });
+    return Object.assign(waiting,{cancel:()=>done(null)});
+  }
+  close(){for(const waiter of [...this.waiters])this.waiters.delete(waiter);}
+}
+
+const OUTCOME={success:'delivered',error:'failed',idle:'cancelled'};
+const TERMINAL_AGENTS=['claude-code','codex-cli'];
+
+/**
+ * Hand-overs whose recipient shows itself by starting a turn:
+ *  - text typed into a terminal pane ("wezterm cli send-text", WezTerm under any file name): the pane can run anything, so the
+ *    recipient is the Claude Code or Codex CLI session of another harness that starts a turn within a few seconds;
+ *  - a message queued for a Codex session ("codex queue --thread"): that session, desktop or CLI, once it takes the
+ *    message up, which may be later if it is busy.
+ * The hand-back is the end of that turn: completed, failed, or cancelled when it was interrupted.
+ */
+export class SessionRelays {
+  constructor({tracker,turns,window=8000,limit=2*60*60*1000,threads=threadIdOf}={}){
+    this.tracker=tracker;this.turns=turns;this.window=window;this.limit=limit;this.threads=threads;this.pending=new Map();this.closed=false;
+  }
+  async dispatched({key,from,kind,target}){
+    if(!this.turns||this.pending.has(key))return;
+    // The turn may have started a moment before this process was seen.
+    const since=this.turns.now()-1500,relay={key,stopped:false,cancel(){}};this.pending.set(key,relay);
+    const wait=(accept,within)=>{const waiting=this.turns.next(accept,{since,within});relay.cancel=waiting.cancel;return waiting;};
+    let turn=null;
+    if(kind==='term-text')turn=await wait(t=>t.phase==='start'&&t.source!==from&&TERMINAL_AGENTS.includes(t.source),this.window);
+    else if(kind==='codex-queue'){
+      const thread=await this.threads(target);
+      if(thread&&!relay.stopped)turn=await wait(t=>t.phase==='start'&&t.file.includes(thread),this.limit);
+      if(turn?.source===from)turn=null;
+    }
+    if(!turn||relay.stopped||this.closed){this.pending.delete(key);return;}
+    const task={id:`${kind}:${key.replace('.','_')}`,from,to:turn.source};
+    if(!this.tracker.consume({...task,phase:'started'}).ok){this.pending.delete(key);return;}
+    const ending=this.turns.next(t=>t.phase==='end'&&t.file===turn.file,{since:turn.at,within:this.limit});relay.cancel=ending.cancel;
+    const end=await ending;this.pending.delete(key);
+    if(!this.closed)this.tracker.consume({...task,phase:end?OUTCOME[end.outcome]??'delivered':'cancelled'});
+  }
+  /** A queue command that failed (no such session) leaves nothing to wait for. */
+  exited(key,exitCode){
+    const relay=this.pending.get(key);if(!relay)return false;
+    if(exitCode!==0){relay.stopped=true;relay.cancel();}
+    return true;
+  }
+  close(){this.closed=true;for(const relay of this.pending.values())relay.cancel();this.pending.clear();}
+}
+
+/** The session id behind a "codex queue --thread" target: an id as it is, or an exact session name from the index. */
+export async function threadIdOf(target,{home=process.env.CODEX_HOME??join(homedir(),'.codex')}={}){
+  if(typeof target!=='string'||!target)return null;
+  if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target))return target.toLowerCase();
+  try{
+    let id=null;
+    for(const line of (await readFile(join(home,'session_index.jsonl'),'utf8')).split('\n')){
+      try{const entry=JSON.parse(line);if(entry.thread_name===target&&typeof entry.id==='string')id=entry.id;}catch{}
+    }
+    return id;
+  }catch{return null;}
+}
