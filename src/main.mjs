@@ -23,7 +23,6 @@ import {HarnessMonitor} from './harness-monitor.mjs';
 import {SessionTurns} from './session-turns.mjs';
 import {installHandoffSkill} from './handoff-install.mjs';
 
-const APP_VERSION=JSON.parse(readFileSync(join(APP_ROOT,'package.json'),'utf8')).version;
 const data=process.env.AGENT_MUSUME_DATA??join(APP_ROOT,'data');
 await mkdir(data,{recursive:true});
 const lockPath=join(data,'process.lock');
@@ -88,7 +87,8 @@ function notifyReactions(){
   setImmediate(()=>{notifyQueued=false;const before=reactionRev,next=reactions();if(next.rev!==before)for(const answer of [...reactionWaiters])answer(next);});
 }
 setInterval(notifyReactions,1000).unref(); // terminal states and helper results expire with time, not with a record
-const snapshot=()=>({application:'agent-musume',version:APP_VERSION,...adapter.status(),mode:demo?'demo':'live',demoLabel:demo?.label??null,watcher:watcher?.status()??{running:false,sourceAvailable:false},dsh:dshMonitor?.status()??{running:false,sourceAvailable:false},sourceRouting:sourceEvidence?.status()??{available:false},sourcesReady,sources:sourceStates(),claudeWatcher:claudeMonitor?.status()??{running:false,sourceAvailable:false},handoffs:handoffs.status(),harnessWatcher:harnessMonitor.status()});
+const VERSION=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8')).version;
+const snapshot=()=>({application:'agent-musume',version:VERSION,...adapter.status(),mode:demo?'demo':'live',demoLabel:demo?.label??null,watcher:watcher?.status()??{running:false,sourceAvailable:false},dsh:dshMonitor?.status()??{running:false,sourceAvailable:false},sourceRouting:sourceEvidence?.status()??{available:false},sourcesReady,sources:sourceStates(),claudeWatcher:claudeMonitor?.status()??{running:false,sourceAvailable:false},handoffs:handoffs.status(),harnessWatcher:harnessMonitor.status()});
 function endDemo() {
   if(!demo)return;clearTimeout(demoTimer);demo=null;
   emitDemo('turn/end',{reason:{kind:'aborted'}});adapter.republish();notifyReactions();

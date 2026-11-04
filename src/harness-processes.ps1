@@ -38,7 +38,7 @@ public static class AgentMusumeHarnessWatcher {
   static readonly Regex DshName = new Regex(@"^(?:dsh|deepseek[- ]harness)\.exe$", RegexOptions.IgnoreCase);
   static readonly Regex BridgeName = new Regex(@"^(?:node|electron|agent-musume)\.exe$", RegexOptions.IgnoreCase);
   static readonly Regex TerminalName = new Regex(@"^wezterm\.exe$", RegexOptions.IgnoreCase);
-  static readonly Regex Candidate = new Regex(@"^(?:claude|codex|node|electron|agent-musume|chatgpt|dsh|deepseek[- ]harness|herdr|wezterm)\.exe$", RegexOptions.IgnoreCase);
+  static readonly Regex Candidate = new Regex(@"^(?:claude|codex|node|electron|agent-musume|chatgpt|dsh|deepseek[- ]harness|herdr|wezterm|wt)\.exe$", RegexOptions.IgnoreCase);
   static bool In(string[] list, string token) { foreach (var item in list) if (string.Equals(item, token, StringComparison.OrdinalIgnoreCase)) return true; return false; }
   static bool Is(string name, string expected) { return string.Equals(name, expected, StringComparison.OrdinalIgnoreCase); }
 
@@ -52,28 +52,71 @@ public static class AgentMusumeHarnessWatcher {
     return tokens;
   }
 
-  // { source, mode }: a CLI task (claude -p, codex exec), an interactive session, or a metadata command (no source).
+  // Claude Code options followed by a value (claude --help): "<value>" always, "<values...>" up to the next option,
+  // "[value]" when the next argument is not an option. Anything else that is not an option is the prompt or a command.
+  static readonly string[] ClaudeValue = { "--agent", "--agents", "--append-system-prompt", "--append-system-prompt-file", "--autocompact", "--debug-file", "--effort", "--environment", "--fallback-model", "--input-format", "--json-schema", "--max-budget-usd", "--max-turns", "--model", "-n", "--name", "--output-format", "--permission-mode", "--permission-prompts", "--plugin-dir", "--plugin-url", "--remote-control-session-name-prefix", "--session-id", "--setting-sources", "--settings", "--system-prompt", "--system-prompt-file", "--system-prompt-snapshot" };
+  static readonly string[] ClaudeValues = { "--add-dir", "--allowedTools", "--allowed-tools", "--betas", "--disallowedTools", "--disallowed-tools", "--file", "--mcp-config", "--tools" };
+  static readonly string[] ClaudeOptional = { "-r", "--resume", "-d", "--debug", "--cloud", "--from-pr", "--prompt-suggestions", "--remote-control", "--teleport", "-w", "--worktree" };
+  static readonly string[] ClaudeCommands = { "agents", "attach", "auth", "auto-mode", "config", "doctor", "gateway", "import", "install", "logs", "mcp", "migrate-installer", "plugin", "plugins", "purge", "respawn", "rm", "setup-token", "stop", "kill", "ultrareview", "update", "upgrade", "help" };
+  static readonly string[] CodexCommands = { "agents", "exec", "e", "review", "login", "logout", "mcp", "mcp-server", "plugin", "app-server", "remote-control", "app", "completion", "update", "doctor", "sandbox", "debug", "apply", "a", "resume", "queue", "archive", "delete", "migrate-rollouts", "migrate-nfs-db", "unarchive", "fork", "cloud", "exec-server", "features", "help", "proto", "responses-api-proxy", "stdio-to-uds" };
+
+  // { source, mode }: a CLI task (claude -p, codex exec), an interactive session started with a task (claude "task",
+  // codex "task": interactive-task), an interactive session, or a metadata command (no source). Only whether there is a
+  // prompt is looked at; its text is not kept.
   public static string[] Classify(string source, string command, bool nodeScript) {
     var tokens = Tokens(command);
     if (tokens == null) return new[] { source, "interactive" };
     if (nodeScript && tokens.Count > 0) tokens.RemoveAt(0);
-    string mode = "interactive";
-    for (int i = 0; i < tokens.Count; i++) {
-      string token = tokens[i];
-      if (token == "--") break;
-      if (In(Metadata, token)) return new string[] { null, "metadata" };
-      if (source == "claude-code") {
-        if (Is(token, "-p") || Is(token, "--print")) { mode = "cli-task"; break; }
-        if (i == 0 && In(MetadataCommands, token)) return new string[] { null, "metadata" };
-      } else if (source == "codex-cli") {
+    if (source == "claude-code") {
+      bool background = false; string first = null;
+      for (int i = 0; i < tokens.Count; i++) {
+        string token = tokens[i];
+        if (token == "--") { if (first == null && i + 1 < tokens.Count) first = ""; break; }
+        if (In(Metadata, token)) return new string[] { null, "metadata" };
+        if (Is(token, "-p") || Is(token, "--print")) return new[] { source, "cli-task" };
+        if (Is(token, "--bg") || Is(token, "--background")) background = true; // runs elsewhere and returns at once
+        if (token.StartsWith("-")) {
+          if (token.IndexOf('=') >= 0) continue;
+          if (In(ClaudeValue, token)) i++;
+          else if (In(ClaudeValues, token)) while (i + 1 < tokens.Count && !tokens[i + 1].StartsWith("-")) i++;
+          else if (In(ClaudeOptional, token) && i + 1 < tokens.Count && !tokens[i + 1].StartsWith("-")) i++;
+          continue;
+        }
+        if (first == null) first = token;
+      }
+      if (first == null || background) return new[] { source, "interactive" };
+      if (In(MetadataCommands, first)) return new string[] { null, "metadata" };
+      return new[] { source, In(ClaudeCommands, first) ? "interactive" : "interactive-task" };
+    }
+    if (source == "codex-cli") {
+      for (int i = 0; i < tokens.Count; i++) {
+        string token = tokens[i];
+        if (In(Metadata, token)) return new string[] { null, "metadata" };
         if (token.StartsWith("--__codex", StringComparison.Ordinal)) return new string[] { null, "metadata" }; // a sandbox helper, e.g. --__codex-windows-mxc
+        if (token == "--") return new[] { source, i + 1 < tokens.Count ? "interactive-task" : "interactive" };
         if (token.StartsWith("-")) { if (In(TakesValue, token)) i++; continue; }
-        if (Is(token, "exec") || Is(token, "e")) mode = "cli-task";
-        else if (In(MetadataCommands, token)) return new string[] { null, "metadata" };
-        break;
+        if (Is(token, "exec") || Is(token, "e") || Is(token, "review")) return new[] { source, "cli-task" };
+        if (In(MetadataCommands, token)) return new string[] { null, "metadata" };
+        return new[] { source, In(CodexCommands, token) ? "interactive" : "interactive-task" };
       }
     }
-    return new[] { source, mode };
+    return new[] { source, "interactive" };
+  }
+
+  // A terminal asked to open a new tab or window that runs Claude Code or Codex: the program it names, or null.
+  //   wt [-w 0] new-tab|nt|split-pane|sp ... claude "task"     (also through a shell: nt cmd /k claude "task")
+  //   wezterm cli spawn ... -- claude "task"     wezterm start ... -- codex "task"
+  // The new session runs under the terminal, not under the harness that asked for it, so the two are paired by time.
+  static readonly Regex Launched = new Regex(@"(?:^|(?<=[\s""'(&;|\\/]))(claude|codex)(?:\.(?:exe|cmd|ps1|bat))?(?=$|[\s""');&|])", RegexOptions.IgnoreCase);
+  // Options of wt and wezterm whose value is a folder, a name or a number, never the program.
+  static readonly string[] LaunchValue = { "-w", "--window", "-d", "--startingDirectory", "-p", "--profile", "--title", "--tabColor", "--colorScheme", "--pos", "--size", "-s", "-t", "--target", "--cwd", "--domain", "--class", "--workspace", "--position", "--pane-id", "--window-id", "--config-file", "--config" };
+  static string LaunchOf(List<string> tokens, int from) {
+    for (int i = from; i < tokens.Count; i++) {
+      if (In(LaunchValue, tokens[i])) { i++; continue; }
+      var match = Launched.Match(tokens[i]);
+      if (match.Success) return Is(match.Groups[1].Value, "claude") ? "claude-code" : "codex-cli";
+    }
+    return null;
   }
 
   // Commands that hand text to an agent that is already open: { mode, target, wait }, or { "other", null, "false" }.
@@ -100,7 +143,14 @@ public static class AgentMusumeHarnessWatcher {
       if (positional.Count < 2) return none;
       return new string[] { positional[1].TrimStart().StartsWith("/", StringComparison.Ordinal) ? "herdr-command" : "herdr-prompt", positional[0], wait ? "true" : "false" };
     }
+    if (Is(program, "wt.exe")) {
+      string launched = LaunchOf(tokens, 0);
+      return launched == null ? none : new string[] { "term-launch", launched, "false" };
+    }
     if (TerminalName.IsMatch(program)) {
+      int spawn = after("cli", "spawn");
+      if (spawn < 0) for (int i = 0; i < tokens.Count; i++) { if (tokens[i].StartsWith("-")) { if (In(LaunchValue, tokens[i])) i++; continue; } if (Is(tokens[i], "start")) spawn = i + 1; break; }
+      if (spawn >= 0) { string launched = LaunchOf(tokens, spawn); return launched == null ? none : new string[] { "term-launch", launched, "false" }; }
       int at = after("cli", "send-text"); if (at < 0) return none;
       string pane = "";
       for (int i = at; i + 1 < tokens.Count; i++) if (Is(tokens[i], "--pane-id")) pane = tokens[i + 1];
@@ -137,9 +187,11 @@ public static class AgentMusumeHarnessWatcher {
     else if (Is(name, "claude.exe") || Is(name, "node.exe") && ClaudeScript.IsMatch(command)) source = "claude-code";
     else if (DshName.IsMatch(name) && command.IndexOf("--type=", StringComparison.Ordinal) < 0) source = "dsh-desktop";
     p.Bridge = BridgeName.IsMatch(name) && HandoffScript.IsMatch(command);
-    if (Is(name, "herdr.exe") || Is(name, "codex.exe") || TerminalName.IsMatch(name)) {
+    if (Is(name, "herdr.exe") || Is(name, "codex.exe") || Is(name, "wt.exe") || TerminalName.IsMatch(name)) {
       var relay = Relay(name, command);
       if (relay[0] == "herdr-command") p.Mode = relay[0];
+      // A new tab or window for Claude Code or Codex: only when it was asked for matters, not how the launcher ends.
+      if (relay[0] == "term-launch") { p.Mode = relay[0]; p.Relay = relay[1]; p.Image = ImageOf(handle); CloseHandle(handle); return; }
       // A hand-over through an agent that is already open: kept with its handle, for the exit code.
       if (relay[0] != "other" && relay[0] != "herdr-command") { p.Mode = relay[0]; p.Relay = relay[1] ?? ""; p.Wait = relay[2] == "true"; p.Image = ImageOf(handle); p.Handle = handle; return; }
     }
@@ -188,7 +240,7 @@ public static class AgentMusumeHarnessWatcher {
             known[key] = p = new Proc { Pid = pid, Parent = Marshal.ReadIntPtr(entry, parentAt).ToInt64(), Order = order };
             int length = Marshal.ReadInt16(entry, nameAt) & 0xFFFF; IntPtr text = Marshal.ReadIntPtr(entry, nameAt + pointer);
             string name = text == IntPtr.Zero ? "" : Marshal.PtrToStringUni(text, length / 2);
-            if (Candidate.IsMatch(name) || IsWezTerm(pid)) { Describe(p, Candidate.IsMatch(name) ? name : "wezterm.exe"); if (p.Mode == "cli-task" || p.Relay != null) fresh = true; }
+            if (Candidate.IsMatch(name) || IsWezTerm(pid)) { Describe(p, Candidate.IsMatch(name) ? name : "wezterm.exe"); if (p.Mode == "cli-task" || p.Mode == "interactive-task" || p.Relay != null) fresh = true; }
           }
           p.LastSeen = now;
         }

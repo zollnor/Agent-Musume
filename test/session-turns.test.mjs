@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {SessionTurns,SessionRelays,threadIdOf} from '../src/session-turns.mjs';
+import {SessionTurns,SessionRelays,threadIdOf,ownsSession} from '../src/session-turns.mjs';
 import {HandoffTracker} from '../src/handoffs.mjs';
 import {CollabTracker} from '../src/collab-tracker.mjs';
 import {RolloutAdapter} from '../src/rollout-adapter.mjs';
@@ -71,4 +71,40 @@ test('adapters report live turns, never replayed ones',()=>{
   a.consume('f',{type:'event_msg',payload:{type:'task_started',turn_id:'t1'}});
   a.consume('f',{type:'event_msg',payload:{type:'task_complete',turn_id:'t1'}});
   assert.deepEqual(seen,[{source:'codex-cli',file:'f',phase:'start'},{source:'codex-cli',file:'f',phase:'end',outcome:'success'}]);
+});
+
+test('a session started with a task is followed to the end of its own first turn, not another session of that program',async()=>{
+  const owner=async({file})=>file==='mine.jsonl';
+  const {turns,relays}=rig({owns:owner,limit:1000});
+  const first=relays.firstTurn({to:'claude-code',pid:42});
+  turns.record({source:'codex-cli',file:'mine.jsonl',phase:'start'}); // another program
+  turns.record({source:'claude-code',file:'other.jsonl',phase:'start'});await tick();
+  turns.record({source:'claude-code',file:'mine.jsonl',phase:'start'});await tick();
+  turns.record({source:'claude-code',file:'other.jsonl',phase:'end',outcome:'success'});
+  turns.record({source:'claude-code',file:'mine.jsonl',phase:'end',outcome:'error'});
+  assert.equal(await first,'error');
+  // One that started a moment before the process was seen; none at all; a cancelled wait.
+  const early=rig({owns:owner,limit:1000});early.turns.record({source:'codex-cli',file:'mine.jsonl',phase:'start'});
+  const run=early.relays.firstTurn({to:'codex-cli',pid:7});early.turns.record({source:'codex-cli',file:'mine.jsonl',phase:'end',outcome:'success'});
+  assert.equal(await run,'success');
+  assert.equal(await rig({owns:owner,limit:50}).relays.firstTurn({to:'claude-code',pid:1}),null);
+  const cancelled=rig({owns:owner,limit:1000}),wait=cancelled.relays.firstTurn({to:'claude-code',pid:1});wait.cancel();
+  assert.equal(await wait,null);
+  const closing=rig({owns:owner,limit:1000}),open=closing.relays.firstTurn({to:'claude-code',pid:1});closing.relays.close();
+  assert.equal(await open,null);
+});
+
+test('a Claude session belongs to the process that registered it; a Codex session to the process that created its file',async()=>{
+  const home=await mkdtemp(join(tmpdir(),'musume-owner-'));
+  try{
+    await mkdir(join(home,'sessions'));await writeFile(join(home,'sessions','42.json'),JSON.stringify({pid:42,sessionId:'s-1',kind:'interactive'}));
+    assert.equal(await ownsSession({source:'claude-code',pid:42,file:join(home,'projects','p','s-1.jsonl'),since:0},{claudeHome:home}),true);
+    assert.equal(await ownsSession({source:'claude-code',pid:42,file:'claude-native:s-1',since:0},{claudeHome:home}),true,'as the Claude monitor names it');
+    assert.equal(await ownsSession({source:'claude-code',pid:42,file:join(home,'projects','p','s-2.jsonl'),since:0},{claudeHome:home}),false);
+    assert.equal(await ownsSession({source:'claude-code',pid:43,file:join(home,'projects','p','s-1.jsonl'),since:0},{claudeHome:home,tries:2}),false);
+    const rollout=join(home,'rollout.jsonl');await writeFile(rollout,'');
+    assert.equal(await ownsSession({source:'codex-cli',pid:7,file:rollout,since:Date.now()-500}),true);
+    assert.equal(await ownsSession({source:'codex-cli',pid:7,file:rollout,since:Date.now()+60000}),false,'a file older than the process');
+    assert.equal(await ownsSession({source:'codex-cli',pid:7,file:join(home,'missing.jsonl'),since:0}),false);
+  }finally{await rm(home,{recursive:true,force:true});}
 });

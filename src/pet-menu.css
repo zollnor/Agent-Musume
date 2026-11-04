@@ -21,6 +21,11 @@ svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke
 
 .card{width:380px;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;user-select:none;transform-origin:var(--origin,top left)}
 .card[hidden]{display:none}
+/* every plain part of the card drags the menu (pet-menu.js); buttons, the field and the lists keep their own cursors */
+.card{cursor:grab}
+.search{cursor:text}
+.items,.tabs,.chips{cursor:default}
+body.moving,body.moving *{cursor:grabbing!important}
 .card.enter{animation:enter .14s cubic-bezier(.2,.8,.2,1)}
 @keyframes enter{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.card.enter{animation:none}}

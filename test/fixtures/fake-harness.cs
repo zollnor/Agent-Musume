@@ -5,6 +5,7 @@
 //   queue ...                                  codex queue
 //   agent get <pane>                           Herdr: a Claude agent whose state is in state.txt next to the program
 //   agent send-keys <pane> <keys...>           Herdr: Enter sets the agent working, then idle again after 9 s
+//   <task>                                     an interactive session started with a task, open until done.txt
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -33,6 +34,15 @@ class FakeHarness {
       return 0;
     }
     if (a.Length == 2 && a[0] == "finish") { Thread.Sleep(int.Parse(a[1])); File.WriteAllText(State, "idle"); return 0; }
+    // A session started with a task (claude "task", codex "task"): it writes its process id next to the program and stays
+    // open, as an interactive session does, until done.txt appears there (at most 90 s).
+    int number;
+    if (a.Length >= 1 && !int.TryParse(a[0], out number)) {
+      string folder = AppDomain.CurrentDomain.BaseDirectory;
+      File.WriteAllText(Path.Combine(folder, "pid.txt"), Process.GetCurrentProcess().Id.ToString());
+      for (int wait = 0; wait < 900 && !File.Exists(Path.Combine(folder, "done.txt")); wait++) Thread.Sleep(100);
+      return 0;
+    }
     int ms = int.Parse(a[0]), code = int.Parse(a[1]); Process child = null;
     int i = Array.IndexOf(a, "--spawn");
     if (i >= 0) child = Process.Start(new ProcessStartInfo(a[i + 1], string.Join(" ", a.Skip(i + 2).Select(Quote))) { UseShellExecute = false, CreateNoWindow = true });

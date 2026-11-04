@@ -4,13 +4,13 @@
 
 AgentMusume 是一款与 AI Agent 会话联动的 AI 娘桌宠。三位角色可分别跟随 ChatGPT/Codex、Claude Code 和 DeepSeek Harness 的本地会话，随思考、工具执行、等待确认和一轮完成等状态作出相应反应；当 Agent 之间派发子任务、交回结果或协作完成时，还会以桌宠间的互动动画呈现，让工作状态与协作过程直观地展现在桌面上。
 
-[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.2/Agent-Musume-Setup-0.1.2.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
+[**看动画演示**](#动画演示) · [**下载 Windows 安装包**](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.3/Agent-Musume-Setup-0.1.3.exe) · [全部版本](https://github.com/zollnor/Agent-Musume/releases) · [English](README.en.md) · [问题反馈](https://github.com/zollnor/Agent-Musume/issues)
 
 Windows · 内置运行环境 · 无需 Node.js · 无需 API Key
 
 ## 动画演示
 
-**v0.1.2 更新**：加强跨工具任务交接识别，覆盖新启动的 CLI、Herdr 派发、终端传话和 Codex 会话排队，让派发、回传与失败对应到桌宠互动。详见[跨工具派任务](#跨工具派任务)。
+**v0.1.3 更新**：新增带任务启动的交互式会话及新窗口、终端标签的交接识别；右键菜单支持拖动空白处移动。详见[跨工具派任务](#跨工具派任务)。
 
 ### 三位角色，三种陪伴
 
@@ -46,15 +46,15 @@ GIF 展示程序内置动作与互动演出。真实联动的触发条件与一�
 
 ### 安装包（推荐）
 
-1. [下载 v0.1.2 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.2/Agent-Musume-Setup-0.1.2.exe)（355,398,828 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
+1. [下载 v0.1.3 Windows x64 安装包](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.3/Agent-Musume-Setup-0.1.3.exe)（355,404,052 字节，约 355 MB / 339 MiB）。**这是可直接安装的 `.exe`；页面底部的 Source code 是源码。**
 2. 双击安装，完成后程序自动启动，桌面右下角出现三只宠物。
 3. 右键宠物打开设置；从托盘菜单选择“演示宠物互动”，可以先看联动效果。
 
 不需要管理员权限，也不需要 Node.js，装好后会自动启动，桌面和开始菜单都有快捷方式。
 
-安装包目前没有代码签名，Windows 可能提示“Windows 已保护你的电脑”。请先确认下载自本仓库的 Release，并按需要比对 [SHA256SUMS.txt](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.2/SHA256SUMS.txt)；确认来源后，可在提示中选择“更多信息”→“仍要运行”。
+安装包目前没有代码签名，Windows 可能提示“Windows 已保护你的电脑”。请先确认下载自本仓库的 Release，并按需要比对 [SHA256SUMS.txt](https://github.com/zollnor/Agent-Musume/releases/download/v0.1.3/SHA256SUMS.txt)；确认来源后，可在提示中选择“更多信息”→“仍要运行”。
 
-> v0.1.2 加强跨工具交接识别，并提供可选的交接 Skill 接入。测试与安装包核对见 [发布核对记录](docs/release-validation-v0.1.2.md)。另一台干净 Windows 电脑上的安装、升级和卸载全流程，尚无本次实测记录。
+> v0.1.3 补充新窗口与终端标签中的交互式任务识别，并支持拖动右键菜单。测试与安装包核对见 [发布核对记录](docs/release-validation-v0.1.3.md)。另一台干净 Windows 电脑上的安装、升级和卸载全流程，尚无本次实测记录。
 
 卸载：在 Windows 的“设置 > 应用 > 已安装的应用”里卸载。配置保留在 `%APPDATA%\Agent-Musume`，不需要的话可以手动删除。
 
@@ -93,7 +93,7 @@ npm ci
 
 这些都可以在设置里改。之后这样用：
 
-- **右键宠物**：播放动作（按分类挑选，或直接打字搜索）、暂停走动、安静 30 分钟、回到原位、互动演示。
+- **右键宠物**：播放动作（按分类挑选，或直接打字搜索）、暂停走动、安静 30 分钟、回到原位、互动演示。按住菜单空白处（头部、标题、底栏）用左键拖动，可以把菜单挪开。
 - **设置**（右键菜单右上角，或托盘图标）：添加宠物，换形象，调大小和位置，选择跟随哪些会话、接手哪些来源的子代理，开关各种互动，调整拖拽手感。
 - **拖动**：按住宠物拖到任意位置，松手时甩一下可以把她抛出去。
 - **托盘图标**：显示或隐藏全部宠物，演示各种反应和互动，退出。双击图标显示宠物。
@@ -149,7 +149,7 @@ npm ci
 - `~/.claude/sessions`，以及仍在运行的 Claude Code 对应的 `~/.claude/projects` 记录
 - `~/.dsh/sessions`
 
-它还会查询本机进程的程序类型、父子关系和启动/退出时间，判断记录来自哪个客户端，以及是否实际启动了另一种 harness。进程列表只含进程号、父进程号、启动顺序和程序名；只有新出现的 claude、codex、node、herdr、WezTerm、ChatGPT、DSH 进程，会在本机读一次命令行来分类（herdr 的提示词只看是否以 `/` 开头，打字和排队的内容不看），不保存命令行、提示词或参数，也不读取进程的环境变量和内存。
+它还会查询本机进程的程序类型、父子关系和启动/退出时间，判断记录来自哪个客户端，以及是否实际启动了另一种 harness。进程列表只含进程号、父进程号、启动顺序和程序名；只有新出现的 claude、codex、node、herdr、WezTerm、Windows Terminal（wt）、ChatGPT、DSH 进程，会在本机读一次命令行来分类（herdr 的提示词只看是否以 `/` 开头，`claude`、`codex` 只看有没有带任务，终端命令只看要运行的程序是不是 Claude Code 或 Codex，打字和排队的内容不看），不保存命令行、提示词或参数，也不读取进程的环境变量和内存。
 
 它不保存提示词、工具参数和输出、回复正文或会话标识，不读取屏幕、键盘和登录凭证。可选安装的交接 Skill 只写入自己的技能目录，不修改各工具的配置或权限。
 
@@ -158,6 +158,13 @@ npm ci
 ## 跨工具派任务
 
 ChatGPT 桌面版、Codex CLI、Claude Code 和 DSH 可以互相派任务。新启动的一次性任务（`claude -p`、`codex exec`）由本机父子进程关系识别，派发方等它跑完，或在后台启动（PowerShell 的 Start-Process、`cmd /c start`、分离的子进程）都可以：监视器每秒约五十次记录进程的父子关系，已退出的启动者保留两分钟，任务仍能追回派发方。两个工具独立运行不会因此被判为协作。桌宠启动前已经存在的进程只作基线，不补演历史交接。不到一秒就结束的任务可能赶不上记录，使用下面的交接入口可完整记录。
+
+带着任务启动的交互式会话（`claude "任务"`、`codex "任务"`）也算派任务，常见于新开一个窗口或标签让它干活：
+
+- 新开控制台窗口（`start cmd /k claude "任务"`、Start-Process 等）：同样按父子进程关系找派发方。
+- 让终端新开标签或窗口（Windows Terminal 的 `wt new-tab` / `wt -w 0 nt`，WezTerm 的 `cli spawn`、`start`）：新会话挂在终端程序下面，桌宠按派发方执行的这条终端命令里写的程序（Claude Code 或 Codex），把随后几秒内出现的该程序会话配给它。
+
+会话的第一轮结束算交回，第一轮还没结束窗口就被关掉算取消。Claude Code 会话按它登记的进程号对应；Codex 会话按启动后新建的会话记录对应。`claude --bg` 后台会话和继续旧会话的 `codex resume` 暂不算派任务。
 
 把任务交给已经打开的 agent，以下几种方式也会自动识别，派发方都由进程关系确定：
 
@@ -205,7 +212,7 @@ npm run package   # 生成 release/ 下的安装包
 
 | 脚本 | 内容 | 影响 |
 | --- | --- | --- |
-| `interaction-verification.mjs <场景>` | 互动演出，场景有 `delegation`、`claude`、`social`、`fish`、`lf`、`df`、`relay`（`relay` 需 Windows 自带的 .NET Framework 编译本地测试进程） | 独立数据目录，不影响正在运行的桌宠 |
+| `interaction-verification.mjs <场景>` | 互动演出，场景有 `delegation`、`claude`、`social`、`fish`、`lf`、`df`、`launch`（需 Windows Terminal）、`relay`（`relay` 需 Windows 自带的 .NET Framework 编译本地测试进程） | 独立数据目录，不影响正在运行的桌宠 |
 | `handoff-verification.mjs` | 本机事件桥、Skill 入口及跨工具派发、回传、失败的真实桌宠演出；可使用 `AGENT_MUSUME_QA_EXE` 验证打包版 | 独立配置目录，仅使用本地测试事件，不调用模型 |
 | `appearance-verification.mjs` | 形象选择和切换 | 独立数据目录 |
 | `source-verification.mjs` | 来源隔离和优先级 | 需要已有配置，结束时恢复 |

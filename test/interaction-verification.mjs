@@ -5,10 +5,11 @@
 //   node test/interaction-verification.mjs social       waiting nudge, cheer, comfort, demos, abort
 //   node test/interaction-verification.mjs fish         the fish's own work lines, chat and hand-over lines
 //   node test/interaction-verification.mjs lf           the lady and the fish: their paired takes, both ways
+//   node test/interaction-verification.mjs launch       new console window and Windows Terminal tabs started with a task
 import assert from 'node:assert/strict';
-import {mkdir,readFile,writeFile,appendFile,readdir,open} from 'node:fs/promises';
+import {mkdir,readFile,writeFile,appendFile,readdir,open,rm} from 'node:fs/promises';
 import {join} from 'node:path';
-import {spawn} from 'node:child_process';
+import {spawn,execFile} from 'node:child_process';
 import {zstdCompressSync} from 'node:zlib';
 import {APP_ROOT} from '../src/prepare.mjs';
 const scenario=process.argv[2]??'delegation';
@@ -22,6 +23,9 @@ const pets=scenario==='delegation'?[
 ]:scenario==='lf'?[
   pet('qa-claude','测试 · 大小姐','claude-lady',40,{reactionSources:[],interaction:{idle:false}}),
   pet('qa-fish','测试 · 肥鱼','blue-fish',560,{reactionSources:[],interaction:{idle:false}})
+]:scenario==='launch'?[
+  pet('qa-claude','测试 · 大小姐','claude-lady',40,{reactionSources:['claude-code'],interaction:{helperSources:['claude-code','codex-cli'],idle:false}}),
+  pet('qa-dragon','测试 · 龙娘','dragon-girl-D',600,{reactionSources:['chatgpt-desktop'],interaction:{idle:false}})
 ]:scenario==='relay'?[
   pet('qa-claude','测试 · 大小姐','claude-lady',40,{reactionSources:['claude-code'],interaction:{idle:false}}),
   pet('qa-dragon','测试 · 龙娘','dragon-girl-D',600,{reactionSources:['chatgpt-desktop'],interaction:{idle:false}})
@@ -209,6 +213,53 @@ try {
     await line(main,{type:'assistant',message:{stop_reason:'end_turn',content:[{type:'text',text:'done'}]}});await line(main,{type:'system',subtype:'turn_duration'});await peer('idle');
     await film('keys-deliver',13000);assert(kinds('keys-deliver').has('collab.deliver'),'the end of that turn is the hand-back');
     checks.push('pane-text-handover','codex-queue-handover','herdr-keys-handover','typing-without-enter-ignored');
+  } else if(scenario==='launch') {
+    // Sessions started with a task in a new window or tab, played by stand-in programs (test/fixtures/fake-harness.cs, no
+    // model): ChatGPT opens a new console window that runs Claude Code (cmd start), then asks Windows Terminal, already
+    // open, for tabs that run Codex and Claude Code; those run under the terminal, not under ChatGPT. The windows show for
+    // a few seconds each. The sessions' turns are written by this test.
+    const fakes=join(data,'fakes'),as=(folder,name)=>join(fakes,folder,name);
+    await mkdir(fakes,{recursive:true});
+    await new Promise((resolve,reject)=>spawn('C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe',['-nologo','-out:'+join(fakes,'fake.exe'),join(APP_ROOT,'test','fixtures','fake-harness.cs')],{windowsHide:true,stdio:'ignore'}).on('exit',c=>c===0?resolve():reject(new Error('csc '+c))));
+    for(const [folder,name] of [['OpenAI.Codex','ChatGPT.exe'],['claude','claude.exe'],['codex','codex.exe'],['holder','holder.exe']]){await mkdir(join(fakes,folder),{recursive:true});await writeFile(as(folder,name),await readFile(join(fakes,'fake.exe')));}
+    const harness=(...command)=>spawn(as('OpenAI.Codex','ChatGPT.exe'),['1500','0','--spawn',...command],{windowsHide:true,stdio:'ignore'});
+    const session=async folder=>{for(let i=0;i<150;i++){const pid=Number(await readFile(as(folder,'pid.txt'),'utf8').catch(()=>''));if(pid)return pid;await sleep(200);}throw new Error('no session started in '+folder);};
+    const close=async folder=>{await writeFile(as(folder,'done.txt'),'');await sleep(800);await rm(as(folder,'pid.txt'),{force:true});await rm(as(folder,'done.txt'),{force:true});};
+    const parentOf=async pid=>(await new Promise(resolve=>execFile('powershell.exe',['-NoProfile','-NonInteractive','-Command',`$p=Get-CimInstance Win32_Process -Filter "ProcessId=${pid}";(Get-CimInstance Win32_Process -Filter "ProcessId=$($p.ParentProcessId)").Name`],{windowsHide:true},(e,out)=>resolve(String(out??''))))).trim();
+    const projects=join(claude,'projects','qa');await mkdir(projects,{recursive:true});
+    const line=(file,r)=>appendFile(file,JSON.stringify({...r,timestamp:new Date().toISOString()})+'\n');
+    // Claude Code registers the session under its process id, then the turn starts.
+    const claudeTurn=async(pid,id)=>{
+      const main=join(projects,id+'.jsonl'),peer=status=>writeFile(join(claude,'sessions',`${pid}.json`),JSON.stringify({sessionId:id,pid,entrypoint:'cli',kind:'interactive',status}));
+      await writeFile(main,'');await peer('idle');await sleep(1500);
+      await line(main,{type:'user',uuid:'u-'+id,message:{content:'synthetic'}});await peer('busy');
+      return async()=>{await line(main,{type:'assistant',message:{stop_reason:'end_turn',content:[{type:'text',text:'done'}]}});await line(main,{type:'system',subtype:'turn_duration'});await peer('idle');};
+    };
+    try{
+      await sleep(3500);assert.equal((await capture('boot')).rows.length,2,'two pet windows');
+      // A terminal window that is open already, started by nobody's harness.
+      spawn('wt.exe',['-w','agent-musume-qa','nt',as('holder','holder.exe'),'hold'],{windowsHide:true,stdio:'ignore'});await session('holder');await sleep(1500);
+      harness('cmd.exe','/c','start','','cmd','/c',as('claude','claude.exe'),'synthetic task');
+      const windowed=await session('claude'),windowParent=await parentOf(windowed),endWindow=await claudeTurn(windowed,'qa-window');
+      await film('window-assign',14000);assert(kinds('window-assign').has('collab.assign'),'a new console window that starts Claude Code with a task is an assignment');
+      await endWindow();await film('window-deliver',13000);assert(kinds('window-deliver').has('collab.deliver'),'the end of its first turn is the hand-back');
+      await close('claude');
+      harness('wt.exe','-w','agent-musume-qa','nt',as('codex','codex.exe'),'synthetic task');
+      const codexTab=await session('codex'),codexParent=await parentOf(codexTab);
+      assert(!/ChatGPT|cmd/i.test(codexParent),'the Codex tab runs under the terminal: '+codexParent);
+      const thread='019f5bc0-a9cb-76b2-922e-ea1d48f62000',rollout=`rollout-2026-11-04T00-00-00-${thread}.jsonl`;
+      await record(rollout,{type:'session_meta',payload:{id:thread,source:'cli',originator:'codex-tui'}});await sleep(1200);
+      await record(rollout,event('task_started',{turn_id:'qa-tab'}));
+      await film('codex-tab-assign',14000);assert(kinds('codex-tab-assign').has('collab.assign'),'a Windows Terminal tab that runs Codex with a task is an assignment');
+      await record(rollout,event('task_complete',{turn_id:'qa-tab'}));
+      await film('codex-tab-deliver',13000);assert(kinds('codex-tab-deliver').has('collab.deliver'),'the end of its first turn is the hand-back');
+      await close('codex');
+      harness('wt.exe','-w','agent-musume-qa','nt',as('claude','claude.exe'),'synthetic task');
+      const claudeTab=await session('claude'),claudeParent=await parentOf(claudeTab),endTab=await claudeTurn(claudeTab,'qa-tab');
+      await film('claude-tab-assign',14000);assert(kinds('claude-tab-assign').has('collab.assign'),'a Windows Terminal tab that runs Claude Code with a task is an assignment');
+      await endTab();await film('claude-tab-deliver',13000);assert(kinds('claude-tab-deliver').has('collab.deliver'));
+      checks.push(`new-window-handover (session under ${windowParent})`,`wt-tab-codex-handover (session under ${codexParent})`,`wt-tab-claude-handover (session under ${claudeParent})`);
+    }finally{for(const folder of ['claude','codex','holder'])await writeFile(as(folder,'done.txt'),'').catch(()=>{});}
   } else {
     await record('cli.jsonl',{type:'session_meta',payload:{id:'qa-cli',source:'cli',originator:'codex-tui'}});
     await record('desktop.jsonl',{type:'session_meta',payload:{id:'qa-desktop',source:'vscode',originator:'Codex Desktop'}});

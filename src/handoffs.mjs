@@ -31,13 +31,22 @@ export class HandoffTracker {
   status(){return {active:[...this.tasks.values()].filter(t=>!t.ended).length,retained:this.tasks.size};}
 }
 
+// How long a terminal's new tab or window may take to show the Claude Code or Codex process it was asked to run.
+const LAUNCH_WINDOW=15000;
+const OUTCOME={success:'delivered',error:'failed',idle:'cancelled'};
+
 /**
  * A different harness must be an actual descendant, never just simultaneously busy. A task is a new CLI task process
- * (claude -p, codex exec), or text handed to an agent already open (Herdr, a terminal pane, a Codex queue), given to
- * `relays`.
+ * (claude -p, codex exec), an interactive session started with a task (claude "task", in a new window for example), or
+ * text handed to an agent already open (Herdr, a terminal pane, a Codex queue), given to `relays`.
+ * A terminal may run the new session under itself rather than under the harness that asked for it (wt new-tab, wezterm
+ * cli spawn): the request is recorded, and the next such session of that program within a few seconds is its task.
  */
 export class ProcessHandoffs {
-  constructor({tracker,relays=null,retries=5}={}){this.tracker=tracker;this.relays=relays;this.seen=new Set();this.active=new Map();this.initial=true;this.retries=retries;this.waiting=new Map();}
+  constructor({tracker,relays=null,retries=5,now=Date.now}={}){
+    this.tracker=tracker;this.relays=relays;this.retries=retries;this.now=now;
+    this.seen=new Set();this.active=new Map();this.following=new Map();this.launches=[];this.initial=true;this.waiting=new Map();
+  }
   snapshot(rows){
     if(!Array.isArray(rows))return;
     const valid=rows.filter(p=>Number.isSafeInteger(p.pid)&&Number.isSafeInteger(p.parentPid)&&Number.isFinite(p.startedAt));
@@ -46,36 +55,62 @@ export class ProcessHandoffs {
     // A PID can recur, so a parent is the latest process with that PID that started no later than the child.
     const byPid=new Map();for(const p of valid)byPid.set(p.pid,[...(byPid.get(p.pid)??[]),p]);
     const parentOf=p=>(byPid.get(p.parentPid)??[]).reduce((best,c)=>c!==p&&c.startedAt<=p.startedAt&&(!best||c.startedAt>best.startedAt)?c:best,null);
-    for(const target of live){
+    const launchOf=p=>HARNESS_SOURCES.includes(p?.relay?.target)?p.relay.target:null; // 'gone' rows keep their relay
+    this.launches=this.launches.filter(l=>this.now()-l.at<=LAUNCH_WINDOW);
+    // Requests for a new tab come first: the tab they open may be in the same snapshot.
+    for(const target of [...live.filter(p=>p.mode==='term-launch'),...live.filter(p=>p.mode!=='term-launch')]){
       const key=identity(target);if(this.seen.has(key))continue;
       const relay=RELAYS.has(target.mode)&&target.relay&&typeof target.relay.target==='string'?target.relay:null;
-      const task=relay||HARNESS_SOURCES.includes(target.source)&&(!target.mode||target.mode==='cli-task')&&!['chatgpt-desktop','dsh-desktop'].includes(target.source);
+      const launch=target.mode==='term-launch'?launchOf(target):null;
+      const session=HARNESS_SOURCES.includes(target.source)&&(!target.mode||target.mode==='cli-task'||target.mode==='interactive-task')&&!['chatgpt-desktop','dsh-desktop'].includes(target.source);
+      const task=relay||launch||session;
       // A task whose starter is not recorded yet gets a few more snapshots before it counts as unrelated.
       if(task&&!this.initial&&!parentOf(target)&&target.parentPid>0&&(this.waiting.get(key)??0)<this.retries){this.waiting.set(key,(this.waiting.get(key)??0)+1);continue;}
       this.seen.add(key);this.waiting.delete(key);
       if(this.initial||!task)continue;
-      let p=target,source=null;const visited=new Set([key]);
+      let p=target,source=null,bridged=false;const visited=new Set([key]);
       for(let depth=0;depth<64;depth++){
         const parent=parentOf(p);
         if(!parent||visited.has(identity(parent)))break;
-        if(parent.bridge)break; // the explicit runner already reports this task, including its exit status
+        if(parent.bridge){bridged=true;break;} // the explicit runner already reports this task, including its exit status
         visited.add(identity(parent));p=parent;
         if(HARNESS_SOURCES.includes(p.source)){source=p.source;break;}
       }
-      if(!source)continue;
-      if(relay){void this.relays?.dispatched({key,from:source,kind:target.mode,target:relay.target,wait:relay.wait===true,image:relay.image});continue;}
-      if(source===target.source)continue;
+      if(launch){
+        // One request seen twice (wezterm start runs the terminal itself with the same command) is recorded once.
+        if(source&&source!==launch&&!launchOf(parentOf(target)))this.launches.push({from:source,to:launch,order:target.startedAt,at:this.now()});
+        continue;
+      }
+      if(relay){if(source)void this.relays?.dispatched({key,from:source,kind:target.mode,target:relay.target,wait:relay.wait===true,image:relay.image});continue;}
+      // The session a harness asked a terminal for; one it started directly no longer needs the request.
+      const asked=this.launches.findIndex(l=>l.to===target.source&&l.order<target.startedAt&&(!source||l.from===source));
+      if(asked>=0){if(!source&&!bridged)source=this.launches[asked].from;if(source===this.launches[asked].from)this.launches.splice(asked,1);}
+      if(!source||source===target.source)continue;
       const handoff={id:'process:'+key.replace('.', '_'),from:source,to:target.source};
-      if(this.tracker.consume({...handoff,phase:'started'}).ok)this.active.set(key,handoff);
+      if(!this.tracker.consume({...handoff,phase:'started'}).ok)continue;
+      this.active.set(key,handoff);
+      if(target.mode==='interactive-task')this.follow(key,handoff,target);
     }
     this.initial=false;
     // Seen identities are only required for processes still present. Active tasks keep their own identity.
     this.seen=new Set(live.map(identity).filter(key=>!this.waiting.has(key)));
     for(const key of this.waiting.keys())if(!live.some(p=>identity(p)===key))this.waiting.delete(key);
   }
+  /** An interactive session stays open after its task: the end of its first turn is the hand-back. */
+  follow(key,handoff,target){
+    const turn=this.relays?.firstTurn?.({to:target.source,pid:target.pid});if(!turn)return;
+    this.following.set(key,turn);
+    void turn.then(outcome=>{
+      if(this.active.get(key)!==handoff)return;
+      this.active.delete(key);this.following.delete(key);
+      this.tracker.consume({...handoff,phase:OUTCOME[outcome]??'cancelled'});
+    });
+  }
   exited({pid,startedAt,exitCode}){
     const key=identity({pid,startedAt}),task=this.active.get(key);if(!task){this.relays?.exited(key,exitCode);return;}
-    this.tracker.consume({...task,phase:exitCode===0?'delivered':Number.isInteger(exitCode)?'failed':'cancelled'});
-    this.active.delete(key);
+    const turn=this.following.get(key);
+    this.active.delete(key);this.following.delete(key);turn?.cancel();
+    // An interactive session closed before its first turn ended leaves the task undone.
+    this.tracker.consume({...task,phase:turn?'cancelled':exitCode===0?'delivered':Number.isInteger(exitCode)?'failed':'cancelled'});
   }
 }

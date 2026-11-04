@@ -1,18 +1,22 @@
 # 跨工具任务交接
 
-v0.1.2 在原有内部子 Agent 联动之外，增加了本机跨 harness 任务交接识别。支持 ChatGPT 桌面版、Codex CLI、Claude Code 和 DeepSeek Harness，四类来源共用覆盖 12 个方向的交接事件接口。
+v0.1.3 在原有内部子 Agent 联动之外，增加了本机跨 harness 任务交接识别。支持 ChatGPT 桌面版、Codex CLI、Claude Code 和 DeepSeek Harness，四类来源共用覆盖 12 个方向的交接事件接口。
 
 ## 自动识别的路径
 
 | 派发方式 | 派发依据 | 交回依据 |
 | --- | --- | --- |
 | 新启动 `claude -p`、`codex exec`，含后台启动 | 实际父子进程关系及一次性任务分类 | 实际任务退出；非零退出按失败处理 |
+| 带任务的交互会话 `claude "任务"`、`codex "任务"`，含新控制台窗口 | 实际父子进程关系及带任务启动分类 | 对应会话第一轮结束；提前关窗为取消 |
+| Windows Terminal `wt new-tab` / `wt -w 0 nt`、WezTerm `cli spawn` / `start` | 派发方终端命令及 15 秒内出现的目标程序带任务会话，每次请求仅配对一次 | 对应会话第一轮结束；提前关窗为取消 |
 | Herdr `agent prompt` | 派发进程所属 harness 与目标窗格的 agent 类型 | 目标工作结束并回到空闲；未被接受的派发按失败处理 |
 | Herdr `agent send-keys` | 目标窗格对应会话开始新的一轮 | 同一轮结束 |
 | WezTerm `cli send-text` | 派发进程关系及随后开始的另一类工具会话 | 对应会话这一轮结束 |
 | `codex queue --thread` | 被指定的已有会话实际开始处理新消息 | 对应会话这一轮结束 |
 
 Herdr 的 `/model`、`/effort` 等斜杠命令，以及未开启新一轮的权限批准、方向键、Esc 和尚未提交的输入，不作为派任务。桌宠启动前已有进程只作基线，不重放历史交接。极短任务可能被进程观察漏过；其他终端、GUI 或远程派发需要下面的显式事件桥接。
+
+Claude Code 会话按登记的进程号对应；Codex 按启动后新建的会话记录对应。Claude `--bg` 和继续旧会话的 `codex resume` 暂不作为派任务。终端标签的匹配依赖目标程序及时间窗口，在并发启动等情况下仍有识别边界；需要明确关联时可使用下方事件入口。
 
 ## 接入其他派发方式
 

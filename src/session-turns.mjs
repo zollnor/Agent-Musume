@@ -1,4 +1,4 @@
-import {readFile} from 'node:fs/promises';
+import {readFile,stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {homedir} from 'node:os';
 
@@ -38,8 +38,29 @@ const TERMINAL_AGENTS=['claude-code','codex-cli'];
  * The hand-back is the end of that turn: completed, failed, or cancelled when it was interrupted.
  */
 export class SessionRelays {
-  constructor({tracker,turns,window=8000,limit=2*60*60*1000,threads=threadIdOf}={}){
-    this.tracker=tracker;this.turns=turns;this.window=window;this.limit=limit;this.threads=threads;this.pending=new Map();this.closed=false;
+  constructor({tracker,turns,window=8000,limit=2*60*60*1000,threads=threadIdOf,owns=ownsSession}={}){
+    this.tracker=tracker;this.turns=turns;this.window=window;this.limit=limit;this.threads=threads;this.owns=owns;this.pending=new Map();this.follows=new Set();this.closed=false;
+  }
+  /**
+   * The first turn of the session that a Claude Code or Codex CLI process started with a task runs ("claude task" in a
+   * new window or tab): a promise of its outcome ('success', 'error', 'idle'), or null when none comes. cancel() stops it.
+   */
+  firstTurn({to,pid}){
+    if(!this.turns)return null;
+    const since=this.turns.now()-1500,deadline=this.turns.now()+this.limit,checked=new Set();let current=null,stopped=false;
+    const left=()=>Math.max(0,deadline-this.turns.now());
+    const run=async()=>{
+      while(!stopped&&!this.closed){
+        current=this.turns.next(t=>t.phase==='start'&&t.source===to&&!checked.has(t),{since,within:left()});
+        const start=await current;if(!start||stopped)return null;checked.add(start);
+        if(!await this.owns({source:to,pid,file:start.file,since})||stopped)continue;
+        current=this.turns.next(t=>t.phase==='end'&&t.file===start.file,{since:start.at,within:left()});
+        const end=await current;return end&&!stopped?end.outcome:null;
+      }
+      return null;
+    };
+    const follow=Object.assign(run().finally(()=>this.follows.delete(follow)),{cancel(){stopped=true;current?.cancel();}});
+    this.follows.add(follow);return follow;
   }
   async dispatched({key,from,kind,target}){
     if(!this.turns||this.pending.has(key))return;
@@ -66,7 +87,7 @@ export class SessionRelays {
     if(exitCode!==0){relay.stopped=true;relay.cancel();}
     return true;
   }
-  close(){this.closed=true;for(const relay of this.pending.values())relay.cancel();this.pending.clear();}
+  close(){this.closed=true;for(const relay of this.pending.values())relay.cancel();this.pending.clear();for(const follow of this.follows)follow.cancel();}
 }
 
 /** The session id behind a "codex queue --thread" target: an id as it is, or an exact session name from the index. */
@@ -80,4 +101,23 @@ export async function threadIdOf(target,{home=process.env.CODEX_HOME??join(homed
     }
     return id;
   }catch{return null;}
+}
+
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+/**
+ * Whether a session file belongs to process `pid`, seen starting at `since`. Claude Code registers each session under the
+ * process that runs it (sessions/<pid>.json, written as it starts). Codex keeps no such record; a session started with a
+ * task writes a new session file, so the file is the process's own when it was created after the process started.
+ */
+export async function ownsSession({source,pid,file,since},{claudeHome=process.env.AGENT_MUSUME_CLAUDE_HOME??process.env.CLAUDE_CONFIG_DIR??join(homedir(),'.claude'),tries=10}={}){
+  if(source==='claude-code'){
+    for(let i=0;i<tries;i++){
+      // The Claude monitor names a session "claude-native:<id>"; a transcript path ends in "<id>.jsonl".
+      const id=String(file).split(/[\\/]/).pop().replace(/\.jsonl$/,'').replace(/^claude-native:/,'');
+      try{const entry=JSON.parse(await readFile(join(claudeHome,'sessions',`${pid}.json`),'utf8'));if(typeof entry.sessionId==='string')return id===entry.sessionId;}catch{}
+      await sleep(300);
+    }
+    return false;
+  }
+  try{return (await stat(file)).birthtimeMs>=since-1500;}catch{return false;}
 }

@@ -14,9 +14,18 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 test('Windows command tokens distinguish real options from quoted prompts and accept global Codex options',{skip:process.platform!=='win32'},async()=>{
   const file=fileURLToPath(new URL('../src/harness-processes.ps1',import.meta.url));
-  const cases=[['claude-code','claude.exe "Explain the -p flag"','interactive'],['claude-code','claude.exe -p "Explain the flag"','cli-task'],
+  const cases=[['claude-code','claude.exe "Explain the -p flag"','interactive-task'],['claude-code','claude.exe -p "Explain the flag"','cli-task'],
     ['codex-cli','codex.exe --model test-model exec "task"','cli-task'],['codex-cli','codex.exe --profile work exec "task"','cli-task'],
-    ['codex-cli','codex.exe "Explain exec"','interactive'],['claude-code','claude.exe --version','metadata'],
+    ['codex-cli','codex.exe "Explain exec"','interactive-task'],['claude-code','claude.exe --version','metadata'],
+    // An interactive session started with a task, and the ones without: option values, commands, background jobs.
+    ['claude-code','claude.exe','interactive'],['claude-code','claude.exe --model opus --permission-mode plan','interactive'],
+    ['claude-code','claude.exe --model opus "Fix the build"','interactive-task'],['claude-code','claude.exe --add-dir D:\\a D:\\b','interactive'],
+    ['claude-code','claude.exe --add-dir D:\\a --model opus "Fix it"','interactive-task'],['claude-code','claude.exe -r','interactive'],
+    ['claude-code','claude.exe --resume 6d4438a2 "Carry on"','interactive-task'],['claude-code','claude.exe -c "Carry on"','interactive-task'],
+    ['claude-code','claude.exe --name=work "Fix it"','interactive-task'],['claude-code','claude.exe -- "Fix it"','interactive-task'],
+    ['claude-code','claude.exe --bg "Fix it"','interactive'],['claude-code','claude.exe agents','interactive'],['claude-code','claude.exe mcp list','metadata'],
+    ['codex-cli','codex.exe','interactive'],['codex-cli','codex.exe -m gpt -C D:\\work "Fix it"','interactive-task'],['codex-cli','codex.exe resume --last','interactive'],
+    ['codex-cli','codex.exe review','cli-task'],['codex-cli','codex.exe login','metadata'],
     ['codex-cli','codex.exe exec "Review the app-server output"','cli-task'],['codex-cli','codex.exe app-server','metadata'],
     ['codex-cli','codex.exe exec "Review the exec-server output"','cli-task'],['codex-cli','codex.exe --__codex-windows-mxc','metadata']];
   const quote=v=>"'"+v.replaceAll("'","''")+"'";
@@ -36,7 +45,15 @@ test('text handed to an open agent names its target: Herdr prompts and keys, ter
     ['wezterm.exe','wezterm.exe cli send-text --pane-id 3 "do it"',{mode:'term-text',target:'3',wait:false}],
     ['wezterm.exe','wezterm.exe cli send-text --no-paste "hi"',{mode:'term-text',target:'',wait:false}],['wezterm.exe','wezterm.exe start',{mode:'other',target:null,wait:false}],
     ['codex.exe','codex.exe -c x=1 queue --message "m" --thread 019f5bc0-a9cb-76b2-922e-ea1d48f629b1',{mode:'codex-queue',target:'019f5bc0-a9cb-76b2-922e-ea1d48f629b1',wait:false}],
-    ['codex.exe','codex.exe exec "queue --thread x"',{mode:'other',target:null,wait:false}]];
+    ['codex.exe','codex.exe exec "queue --thread x"',{mode:'other',target:null,wait:false}],
+    // A new tab or window that runs Claude Code or Codex, through Windows Terminal or WezTerm.
+    ['wt.exe','wt.exe -w 0 nt -d D:\\claude claude "Fix it"',{mode:'term-launch',target:'claude-code',wait:false}],
+    ['wt.exe','wt.exe new-tab --title claude cmd /k C:\\Users\\A\\.local\\bin\\claude.exe "Fix it"',{mode:'term-launch',target:'claude-code',wait:false}],
+    ['wt.exe',`wt.exe -w 0 sp pwsh -NoExit -Command "codex 'Fix it'"`,{mode:'term-launch',target:'codex-cli',wait:false}],
+    ['wt.exe','wt.exe -d D:\\claude',{mode:'other',target:null,wait:false}],['wt.exe','wt.exe nt cmd /k claude-tools.exe',{mode:'other',target:null,wait:false}],
+    ['wezterm.exe','wezterm.exe cli spawn --cwd D:\\codex -- claude "Fix it"',{mode:'term-launch',target:'claude-code',wait:false}],
+    ['wezterm.exe','wezterm.exe --config-file x.lua start -- codex "Fix it"',{mode:'term-launch',target:'codex-cli',wait:false}],
+    ['wezterm.exe','wezterm.exe cli spawn',{mode:'other',target:null,wait:false}]];
   const quote=v=>"'"+v.replaceAll("'","''")+"'";
   const script=cases.map(([program,command])=>`& ${quote(file)} -ClassifyOnly -Source ${quote('relay:'+program)} -CommandLine ${quote(command)}`).join('\n');
   const {stdout}=await promisify(execFile)('powershell.exe',['-NoProfile','-NonInteractive','-EncodedCommand',Buffer.from(script,'utf16le').toString('base64')],{windowsHide:true});

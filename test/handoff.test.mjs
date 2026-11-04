@@ -86,6 +86,73 @@ test('GUI launchers and empty interactive terminals never turn process exit into
   assert.deepEqual(collab.events,[]);
 });
 
+// Stand-in for SessionRelays.firstTurn: each follow() hands back a promise this test settles.
+function turnsRig(){
+  const follows=[];
+  return {follows,relays:{firstTurn:({to,pid})=>{let settle;const turn=Object.assign(new Promise(r=>settle=r),{cancel:()=>settle(null)});follows.push({to,pid,settle,turn});return turn;},exited(){},dispatched(){}}};
+}
+const settled=()=>new Promise(r=>setTimeout(r,5));
+
+test('a new console window started with a task (start cmd /k claude "task") is a hand-over until its first turn ends',async()=>{
+  const collab=new CollabTracker(),tracker=new HandoffTracker({collab}),{follows,relays}=turnsRig(),p=new ProcessHandoffs({tracker,relays});
+  const codex={pid:1,parentPid:0,startedAt:100,source:'codex-cli'};p.snapshot([codex]);
+  // codex -> cmd /c start (exited) -> cmd /k -> claude "task", in its own window
+  const session={pid:5,parentPid:4,startedAt:400,source:'claude-code',mode:'interactive-task'};
+  p.snapshot([codex,{pid:3,parentPid:1,startedAt:200,source:null,mode:'gone'},{pid:4,parentPid:3,startedAt:300,source:null},session]);
+  assert.deepEqual(collab.events.map(e=>[e.kind,e.source,e.target]),[['task.assigned','codex-cli','claude-code']]);
+  assert.deepEqual(follows.map(f=>[f.to,f.pid]),[['claude-code',5]]);
+  follows[0].settle('success');await settled();
+  assert.deepEqual(collab.events.map(e=>e.kind),['task.assigned','result.delivered']);
+  p.exited({pid:5,startedAt:400,exitCode:0});assert.equal(collab.events.length,2,'closing the window later changes nothing');
+  // Closed before its first turn ended: the task is left undone. A plain interactive session is never a task.
+  p.snapshot([codex,{pid:6,parentPid:1,startedAt:500,source:'claude-code',mode:'interactive-task'},{pid:7,parentPid:1,startedAt:600,source:'claude-code',mode:'interactive'}]);
+  p.exited({pid:6,startedAt:500,exitCode:0});await settled();
+  assert.deepEqual(collab.events.map(e=>e.kind),['task.assigned','result.delivered','task.assigned','task.failed']);
+  for(const [outcome,kind] of [['error','task.failed'],['idle','task.failed']]){
+    const c=new CollabTracker(),t=new HandoffTracker({collab:c}),r=turnsRig(),q=new ProcessHandoffs({tracker:t,relays:r.relays});
+    q.snapshot([codex]);q.snapshot([codex,{pid:8,parentPid:1,startedAt:700,source:'claude-code',mode:'interactive-task'}]);
+    r.follows[0].settle(outcome);await settled();assert.deepEqual(c.events.map(e=>e.kind),['task.assigned',kind]);
+  }
+});
+
+test('a session a terminal opens on request (wt new-tab, wezterm cli spawn) goes back to the harness that asked',async()=>{
+  let now=50000;
+  const collab=new CollabTracker(),tracker=new HandoffTracker({collab}),{follows,relays}=turnsRig(),p=new ProcessHandoffs({tracker,relays,now:()=>now});
+  const desktop={pid:1,parentPid:0,startedAt:100,source:'chatgpt-desktop'},shell={pid:2,parentPid:1,startedAt:150,source:null};
+  const terminal={pid:50,parentPid:0,startedAt:10,source:null};p.snapshot([desktop,shell,terminal]);
+  // ChatGPT runs wt.exe; the tab's Claude Code runs under the terminal, in the same snapshot as the request.
+  const tab={pid:60,parentPid:50,startedAt:310,source:'claude-code',mode:'interactive-task'};
+  p.snapshot([desktop,shell,terminal,tab,{pid:3,parentPid:2,startedAt:300,source:null,mode:'term-launch',relay:{target:'claude-code',wait:false,image:'wt.exe'}}]);
+  assert.deepEqual(collab.events.map(e=>[e.kind,e.source,e.target]),[['task.assigned','chatgpt-desktop','claude-code']]);
+  assert.equal(follows[0].pid,60);follows[0].settle('success');await settled();
+  assert.equal(collab.events.at(-1).kind,'result.delivered');
+  // The request is used up: a session the user opens in that terminal afterwards is nobody's task.
+  p.snapshot([desktop,shell,terminal,{pid:61,parentPid:50,startedAt:320,source:'claude-code',mode:'interactive-task'}]);
+  assert.equal(collab.events.length,2);
+  // A request for another program, for the asker's own program, or one too old is not paired.
+  p.snapshot([desktop,shell,terminal,{pid:4,parentPid:2,startedAt:400,source:null,mode:'term-launch',relay:{target:'codex-cli',wait:false,image:'wt.exe'}}]);
+  p.snapshot([desktop,shell,terminal,{pid:62,parentPid:50,startedAt:410,source:'claude-code',mode:'interactive-task'}]);
+  assert.equal(collab.events.length,2,'a Codex tab was asked for, not Claude Code');
+  now+=16000;
+  p.snapshot([desktop,shell,terminal,{pid:63,parentPid:50,startedAt:420,source:'codex-cli',mode:'cli-task'}]);
+  assert.equal(collab.events.length,2,'the request expired');
+  const claude={pid:70,parentPid:0,startedAt:500,source:'claude-code'};
+  p.snapshot([claude,terminal,{pid:71,parentPid:70,startedAt:510,source:null,mode:'term-launch',relay:{target:'claude-code',wait:false,image:'wt.exe'}}]);
+  p.snapshot([claude,terminal,{pid:72,parentPid:50,startedAt:520,source:'claude-code',mode:'interactive-task'}]);
+  assert.equal(collab.events.length,2,'Claude Code opening Claude Code is no hand-over');
+  // wezterm start runs the terminal with the same command: one request; a CLI task in the tab ends with its exit.
+  const launcher={pid:80,parentPid:2,startedAt:600,source:null,mode:'term-launch',relay:{target:'codex-cli',wait:false,image:'wezterm.exe'}};
+  p.snapshot([desktop,shell,terminal,launcher,{pid:81,parentPid:80,startedAt:610,source:null,mode:'term-launch',relay:{target:'codex-cli',wait:false,image:'wezterm-gui.exe'}}]);
+  assert.equal(p.launches.length,1);
+  p.snapshot([desktop,shell,terminal,{pid:82,parentPid:50,startedAt:620,source:'codex-cli',mode:'cli-task'}]);
+  p.exited({pid:82,startedAt:620,exitCode:0});
+  assert.deepEqual(collab.events.slice(2).map(e=>[e.kind,e.source,e.target]),[['task.assigned','chatgpt-desktop','codex-cli'],['result.delivered','chatgpt-desktop','codex-cli']]);
+  // A session that runs under the asker after all (a new terminal process) uses up the request too.
+  p.snapshot([desktop,shell,terminal,{pid:90,parentPid:2,startedAt:700,source:null,mode:'term-launch',relay:{target:'claude-code',wait:false,image:'wt.exe'}},
+    {pid:91,parentPid:90,startedAt:710,source:'claude-code',mode:'interactive-task'}]);
+  assert.equal(p.launches.length,0);assert.equal(collab.events.length,5);
+});
+
 function rig(from,to){
   let now=100000;const sent=[];
   const d=new Director({now:()=>now,send:(id,c)=>sent.push({id,...c}),random:()=>0.3,

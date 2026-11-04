@@ -11,11 +11,12 @@ function page() {
     classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c),toggle:(c,on)=>{if(on??!classes.has(c))classes.add(c);else classes.delete(c);}},
     replaceChildren(...kids){this.children=kids;},append(...kids){this.children.push(...kids);},setAttribute(k,v){this.attrs[k]=String(v);},getAttribute(k){return this.attrs[k]??null;},
     addEventListener(t,f){(this.listeners[t]??=[]).push(f);},fire(t,e={}){for(const f of this.listeners[t]??[])f({target:this,preventDefault(){},...e});},
-    insertAdjacentHTML(){},click(){this.fire('click');},focus(){doc.activeElement=this;},getBoundingClientRect:()=>({height:420})};
+    insertAdjacentHTML(){},click(){this.fire('click');},focus(){doc.activeElement=this;},getBoundingClientRect:()=>({height:420}),
+    closest(selector){return selector.split(',').includes(this.tag)||[...classes].some(c=>selector.split(',').includes('.'+c))?this:null;},setPointerCapture(){}};
     Object.defineProperty(el,'text',{get(){return el.children.length?el.children.map(c=>c.textContent).join('|'):el.textContent;}});return el;};
   const ids={};for(const id of ['card','avatar','name','state-dot','state-text','source','settings','close','toolbar','search','count','browse','tabs','items','demo-block','demo-toggle','demos','foot'])ids[id]=make('div');
   const picks=[],sent={};let render;
-  const window={deskpetMenu:{onModel:f=>{render=f;},onShow(){},pick:p=>picks.push(p),close:()=>{sent.close=true;},resize:h=>{sent.height=h;}}};
+  const window={deskpetMenu:{onModel:f=>{render=f;},onShow(){},pick:p=>picks.push(p),close:()=>{sent.close=true;},resize:h=>{sent.height=h;},drag:phase=>(sent.drag??=[]).push(phase)}};
   const doc={activeElement:null,getElementById:id=>ids[id],createElement:make,listeners:{},addEventListener(t,f){(this.listeners[t]??=[]).push(f);},documentElement:make('html'),body:make('body')};
   const storage={};const localStorage={getItem:k=>storage[k]??null,setItem:(k,v)=>{storage[k]=v;}};
   const ctx={window,document:doc,localStorage,JSON};vm.createContext(ctx);
@@ -43,7 +44,7 @@ test('the pop-up menu lays out a pet\'s tree: header, toggles, counted tabs, sho
   assert.deepEqual(p.ids.tabs.children.map(b=>b.text),['基础|1','点击|1','日常|2','碎碎念|1','工作状态|1'],'each tab counts its clips; the engine\'s small groups share 基础');
   assert.equal(p.ids.tabs.children.find(b=>b.attrs['aria-selected']==='true').dataset.key,'g2','opens on the daily tab');
   assert.deepEqual(p.ids.items.children.map(b=>b.text),['伸懒腰','困倦哈欠']);
-  assert.deepEqual(p.ids.foot.children.map(b=>b.textContent),['Esc 关闭','运行状态','重新加载'],'the footer says what its two actions do');
+  assert.deepEqual(p.ids.foot.children.map(b=>b.textContent),['拖空白处移动 · Esc 关闭','运行状态','重新加载'],'the footer says what its two actions do');
   assert.equal(p.ids.search.placeholder,'搜索 6 个动作');assert.equal(p.sent.height,420);
   p.ids.items.children[1].click();p.ids.settings.onclick();p.ids.demos.children[1].click();
   p.ids.tabs.children[4].click();p.ids.items.children[0].click();
@@ -106,4 +107,22 @@ test('every pet menu lists each of its clips exactly once, all of them, in non-e
     assert.equal(all.size,112);assert(groups.every(g=>g.children.length>0));
     assert.equal(new Set(groups.map(g=>g.label)).size,groups.length,appearance+': no two tabs share a name');
   }
+});
+
+test('a left-button drag on a plain part of the menu moves it; a small slip stays a click; buttons and lists never drag',async()=>{
+  const p=page();vm.runInContext(await readFile(new URL('../src/pet-menu.js',import.meta.url),'utf8'),p.ctx);
+  p.render({name:'龙娘',appearance:'dragon-girl-D',accent:'#9a7fe0',status:{state:'idle',text:'空闲',source:''},tree});
+  const card=p.ids.card,header=p.ctx.document.createElement('header');header.className='head';
+  const at=(type,x,y,target=header,extra={})=>card.fire(type,{target,button:0,pointerId:1,clientX:x,clientY:y,...extra});
+  at('pointerdown',10,10);at('pointermove',12,11);at('pointerup',12,11);
+  assert.deepEqual(p.sent.drag,['start','end'],'a press that barely moves is a click: the grab point is taken, the menu stays');
+  p.sent.drag=[];
+  at('pointerdown',10,10);at('pointermove',30,18);at('pointermove',60,40);at('pointerup',60,40);at('lostpointercapture',60,40);
+  assert.deepEqual(p.sent.drag,['start','move','move','end']);
+  for(const target of [p.ctx.document.createElement('button'),p.ids.items,p.ctx.document.createElement('input')]){
+    if(target===p.ids.items)target.className='items';
+    at('pointerdown',10,10,target);at('pointermove',80,80,target);at('pointerup',80,80,target);
+  }
+  at('pointerdown',10,10,header,{button:2});at('pointermove',80,80);at('pointerup',80,80);
+  assert.equal(p.sent.drag.length,4,'buttons, lists, the field and the right button do not move the menu');
 });

@@ -57,7 +57,7 @@
     $('toolbar').replaceChildren(...items);
   }
   function footer(tree){
-    const keys=el('span','keys','Esc 关闭');
+    const keys=el('span','keys','拖空白处移动 · Esc 关闭');
     $('foot').replaceChildren(keys,...FOOT.map(a=>tree.findIndex(n=>n.action===a)).filter(i=>i>=0).map(i=>{const [text,tip]=FOOT_TEXT[tree[i].action]??[tree[i].label];return button('',text,()=>pick([i]),tip);}));
   }
   function demos(tree){
@@ -157,6 +157,33 @@
     if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&document.activeElement!==$('search'))$('search').focus();
   });
   $('close').addEventListener('click',()=>api.close());
+
+  // ---------- moving ----------
+  // Holding the left button on a plain part of the card (the header, a section title, the footer: anything that is not a
+  // button, the search field or a list) and dragging moves the menu. A press that moves less than 4 px stays a click.
+  // Only start (the grab point, at the press), move and end go out: the main process follows the pointer on screen.
+  const NOT_HANDLE='button,input,label,.items,.tabs,.chips';
+  let press=null;
+  $('card').addEventListener('pointerdown',e=>{
+    if(e.button!==0||!api.drag||e.target.closest?.(NOT_HANDLE))return;
+    press={id:e.pointerId,x:e.clientX,y:e.clientY,moving:false};
+    $('card').setPointerCapture?.(e.pointerId);api.drag('start');
+  });
+  $('card').addEventListener('pointermove',e=>{
+    if(!press||e.pointerId!==press.id)return;
+    if(!press.moving){
+      if(Math.abs(e.clientX-press.x)<4&&Math.abs(e.clientY-press.y)<4)return;
+      press.moving=true;document.body.classList.add('moving');
+    }
+    api.drag('move');
+  });
+  const release=e=>{
+    if(!press||e.pointerId!==press.id)return;
+    api.drag('end');document.body.classList.remove('moving');
+    press=null;
+  };
+  $('card').addEventListener('pointerup',release);$('card').addEventListener('pointercancel',release);
+  $('card').addEventListener('lostpointercapture',release);
   $('demo-toggle').addEventListener('click',()=>setDemos($('demo-toggle').getAttribute('aria-expanded')!=='true'));
 
   // ---------- size and entrance ----------

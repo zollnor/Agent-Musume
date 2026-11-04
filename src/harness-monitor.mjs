@@ -10,7 +10,8 @@ export class HarnessMonitor {
   constructor({tracker,turns=null,data=join(tmpdir(),'agent-musume-'+process.pid),onChange=()=>{}}={}){
     // Herdr panes answer for themselves; a terminal pane or a Codex queue is known by the session turn it starts.
     const herdr=new HerdrRelays({tracker,turns}),sessions=new SessionRelays({tracker,turns});
-    this.relays={dispatched:r=>r.kind.startsWith('herdr')?herdr.dispatched(r):sessions.dispatched(r),exited:(key,code)=>herdr.exited(key,code)||sessions.exited(key,code),close(){herdr.close();sessions.close();}};
+    this.relays={dispatched:r=>r.kind.startsWith('herdr')?herdr.dispatched(r):sessions.dispatched(r),exited:(key,code)=>herdr.exited(key,code)||sessions.exited(key,code),
+      firstTurn:r=>sessions.firstTurn(r),close(){herdr.close();sessions.close();}};
     this.links=new ProcessHandoffs({tracker,relays:this.relays});this.data=data;this.onChange=onChange;this.running=false;this.available=false;this.errors=0;this.processes=0;}
   async start(){
     if(this.running||process.platform!=='win32')return;this.running=true;
